@@ -1,6 +1,6 @@
 Scaffold application generated using activator from template play-java.
 
-Running: activator "run <port>"
+Running: `activator "run PORT"`
 
 
 ## This is your new Play application
