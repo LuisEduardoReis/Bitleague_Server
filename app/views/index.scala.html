@@ -1,20 +1,45 @@
-@*
- * This template takes a single argument, a String containing a
- * message to display.
- *@
-@(message: String)
+@main {
+    <div id="login" class="row">
+        <div id="alert" class="alert alert-danger" role="alert">
+            That username has been taken
+        </div>
+        <form class="form-signin" role="form">
+            <h2 class="form-signin-heading">Please sign in</h2>
+            <label for="inputUsername" class="sr-only">Username</label>
+            <input type="text" id="inputUsername" class="form-control" placeholder="Username" required autofocus>
+            <label for="inputPassword" class="sr-only">Password</label>
+            <input type="password" id="inputPassword" class="form-control" placeholder="Password">
+            <button id="loginSubmit" class="btn btn-lg btn-primary btn-block">Sign in</button>
+        </form>
+        <p>Please note: This is not a real login screen, any username and password will be accepted.</p>
+    </div>
 
-@*
- * Call the the `main` template with two arguments. The first
- * argument is a `String` with the title of the page, the second
- * argument is an `Html` object containing the body of the page.
- *@
-@main("Welcome to Play") {
-
-    @*
-     * Get an `Html` object by calling the built-in Play welcome
-     * template and passing a `String` message.
-     *@
-    @play20.welcome(message, style = "Java")
-
+    <div id="chat">
+        <div class="row">
+            <form class="form-inline" role="form">
+                Join existing room:
+                <select id="roomselect" class="form-control">
+                    <option selected>Lobby</option>
+                </select>
+                or create a new one:
+                <div class="form-group">
+                    <label class="sr-only" for="roomname">Room name</label>
+                    <input type="text" class="form-control" id="roomname" placeholder="Room name">
+                </div>
+                <button id="create" class="btn btn-default">Create</button>
+            </form>
+        </div>
+        <div class="row">
+            <div id="main" class="col-md-8">
+                <div id="messages">
+                </div>
+                <input id="talk" type="text" class="form-control">
+            </div>
+            <div id="membersbar" class="col-md-4">
+                <h2>Members</h2>
+                <ul id="members">
+                </ul>
+            </div>
+        </div>
+    </div>
 }
