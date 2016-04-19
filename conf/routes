@@ -5,6 +5,13 @@
 # Home page
 GET        /                     controllers.Application.index()
 
+# Original Chat
+GET        /chat                 controllers.Application.chat()
+
+# API
+# GET  /api/                     controllers.API.test()
+
+
 # Map static resources from the /public folder to the /assets URL path
 GET        /assets/*file         controllers.Assets.at(path="/public", file)
 GET        /webjars/*file        controllers.WebJarAssets.at(file)
