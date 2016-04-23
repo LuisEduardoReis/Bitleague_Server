@@ -2,19 +2,28 @@
 # This file defines all application routes (Higher priority routes first)
 # ~~~~
 
-# Home page
-GET        /                     controllers.Application.index()
-
-# Original Chat
-GET        /chat                 controllers.Application.chat()
+# An example controller showing a sample home page
+GET     /                           controllers.Application.index
+GET     /chat                       controllers.Application.chat
 
 # API
-# GET  /api/                     controllers.API.test()
+# Users
+GET     /api/users                       controllers.Application.getUsers(page: Int ?= 0, page_size : Int ?= 10)
+GET     /api/user                        controllers.Application.getUser(id: String ?= "")
 
+POST    /api/user                        controllers.Application.addUser
+DELETE  /api/user                        controllers.Application.deleteUser(id: String ?= "")
+
+
+# An example controller showing how to use dependency injection
+GET     /count                      controllers.CountController.count
+# An example controller showing how to write asynchronous code
+GET     /message                    controllers.AsyncController.message
 
 # Map static resources from the /public folder to the /assets URL path
-GET        /assets/*file         controllers.Assets.at(path="/public", file)
-GET        /webjars/*file        controllers.WebJarAssets.at(file)
+#GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
 
-#Add SignalJ Routes
-->     /         					signalJ.Routes
+GET        /assets/*file         controllers.Assets.at(path="/public", file)
+#GET        /webjars/*file        controllers.WebJarAssets.at(file)
+
+#->          /                   signalJ.Routes
