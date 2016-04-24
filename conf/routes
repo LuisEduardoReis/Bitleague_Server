@@ -11,8 +11,19 @@ GET     /chat                       controllers.Application.chat
 GET     /api/users                       controllers.Application.getUsers(page: Int ?= 0, page_size : Int ?= 10)
 GET     /api/user                        controllers.Application.getUser(id: String ?= "")
 
+
 POST    /api/user                        controllers.Application.addUser
 DELETE  /api/user                        controllers.Application.deleteUser(id: String ?= "")
+
+
+# Leagues
+GET     /api/leagues                     controllers.LeagueApi.getLeagues(page: Int ?= 0, page_size : Int ?= 10)
+GET     /api/league                      controllers.LeagueApi.getLeague(id: String ?= "")
+
+POST    /api/league                        controllers.LeagueApi.addLeague
+DELETE  /api/league                      controllers.LeagueApi.deleteLeague(id: String ?= "")
+
+
 
 
 # An example controller showing how to use dependency injection
