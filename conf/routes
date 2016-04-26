@@ -14,7 +14,7 @@ GET     /api/user                        controllers.Application.getUser(id: Str
 POST    /api/user                        controllers.Application.addUser
 DELETE  /api/user                        controllers.Application.deleteUser(id: String ?= "")
 
-
+GET     /api/login                       controllers.AuthenticationController.login
 # An example controller showing how to use dependency injection
 GET     /count                      controllers.CountController.count
 # An example controller showing how to write asynchronous code
