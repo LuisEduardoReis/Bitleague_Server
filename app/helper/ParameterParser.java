@@ -13,13 +13,14 @@ public class ParameterParser {
     public ParameterParser(JsonNode json, String[] args) {
         success = false;
         for(String arg : args) {
-            String value = json.findValue(arg).textValue();
-            if (value == null) {reason = "Missing value'" + arg + "'."; return;}
+            JsonNode node = json.findValue(arg);
+            if (node == null) {reason = "Missing value '" + arg + "'."; return;}
+            String value = node.textValue();
             if (value == "") {reason = "Parameter '" + arg + "' can't be null."; return;}
 
             hash.put(arg, value);
         }
-        success = false;
+        success = true;
     }
 
     public String get(String key) {return hash.get(key);}
