@@ -1,6 +1,7 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import helper.ParameterParser;
 import models.User;
 import org.jongo.MongoCursor;
@@ -75,17 +76,16 @@ public class AuthenticationController extends Controller{
             return internalServerError(e.toString());
         }
         String fb_id = fb_json.findValue("user_id").textValue();
-        User user = User.findOrCreateByFacebookId(fb_id);
+        User user = User.findOrCreateByFacebookId(fb_id, getAppAccessToken());
 
         String token = nextToken();
         user.token = token;
         user.insert();
 
-        return ok(token);
-    }
-
-    public static boolean checkUserToken(String user_id, String token) {
-        return User.findByToken(token).id.equals(user_id);
+        ObjectNode loginRes = Json.newObject();
+            loginRes.put("token", token);
+            loginRes.put("user", user.id.toString());
+        return ok(loginRes);
     }
 
 
