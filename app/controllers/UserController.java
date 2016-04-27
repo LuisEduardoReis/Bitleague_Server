@@ -27,7 +27,6 @@ public class UserController extends Controller {
         if (!request().hasHeader("Authorization")) return unauthorized("Missing authorization header");
         User user = User.findById(id);
         if (user == null) return notFound("User not found");
-        Logger.info(request().getHeader("Authorization"));
         User user_t = User.findByToken(request().getHeader("Authorization"));
         if (user_t == null) return unauthorized("Invalid authorization token: user not found!");
         if (!(user_t.isAdmin || user_t.id.equals(user.id))) return unauthorized("Invalid authorization token!");

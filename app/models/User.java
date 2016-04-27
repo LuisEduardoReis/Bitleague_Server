@@ -35,12 +35,11 @@ public class User extends Model {
 
     public User insert() { users().save(this); return this; }
 
-    public void remove() {
-        users().remove(this.id);
-    }
+    public void remove() { users().remove(this.id); }
 
     public static User findById(String id) {
-        return users().findOne(new ObjectId(id)).as(User.class);
+        try {return users().findOne(new ObjectId(id)).as(User.class);}
+        catch(Exception e) { return null; }
     }
     public static User findByName(String name) {
         return users().findOne("{name: #}", name).as(User.class);
