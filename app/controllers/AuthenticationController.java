@@ -81,7 +81,6 @@ public class AuthenticationController extends Controller{
         user.token = token;
         user.insert();
 
-        response().setHeader("Access-Control-Allow-Origin", "*");
         return ok(token);
     }
 
