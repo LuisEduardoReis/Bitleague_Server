@@ -30,6 +30,8 @@ public class LeagueController extends Controller {
     // League
 
     public Result getLeagues(int page, int page_size) {
+        if (!request().hasHeader("Authorization")) return unauthorized("Missing authorization header");
+
         MongoCursor<League> leagues = League.leagues()
                 .find().skip(page*page_size).limit(page_size)
                 .as(League.class);
@@ -37,6 +39,8 @@ public class LeagueController extends Controller {
     }
 
     public Result getLeague(String id) {
+        if (!request().hasHeader("Authorization")) return unauthorized("Missing authorization header");
+
         League league = League.findById(id);
         if (league != null)
             return ok(Json.toJson(league));
@@ -52,8 +56,9 @@ public class LeagueController extends Controller {
     @BodyParser.Of(BodyParser.Json.class)
     public Result addUser() {
 
+        if (!request().hasHeader("Authorization")) return unauthorized("Missing authorization header");
         JsonNode json = request().body().asJson();
-        String args[] = {"id", "user_id"};
+        String args[] = {"id"};
         ParameterParser params = new ParameterParser(json, args);
         if (!params.success) return badRequest(params.reason);
 
@@ -61,29 +66,40 @@ public class LeagueController extends Controller {
         if(league == null)
             return notFound();
 
+        User user_t = User.findByToken(request().getHeader("Authorization"));
+        if (user_t == null) return unauthorized("Invalid authorization token: user not found!");
+
+
         if(league.users != null) {
             ArrayList<String> temp = new ArrayList<String>(Arrays.asList(league.users));
-            temp.add(params.get("user_id"));
+            temp.add(user_t.id.toString());
             league.users = temp.toArray(new String[0]);
         }
         else
-            league.users = new String[]{params.get("user_id")};
+            league.users = new String[]{user_t.id.toString()};
 
         league.insert();
 
-        return ok();
+        return ok(Json.toJson(league.users));
     }
 
 
     @BodyParser.Of(BodyParser.Json.class)
     public Result addLeague() {
+        if (!request().hasHeader("Authorization")) return unauthorized("Missing authorization header");
+
         JsonNode json = request().body().asJson();
-        String args[] = {"id", "name"};
+        String args[] = {"name"};
         ParameterParser params = new ParameterParser(json, args);
         if (!params.success) return badRequest(params.reason);
 
 
-        String creator =  params.get("id");
+        User user_t = User.findByToken(request().getHeader("Authorization"));
+        if (user_t == null) return unauthorized("Invalid authorization token: user not found!");
+
+
+
+        String creator =  user_t.id.toString();
         String name = params.get("name");
 
         League league = new League();
