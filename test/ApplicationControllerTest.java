@@ -26,7 +26,7 @@ import static org.junit.Assert.*;
  * If you are interested in mocking a whole application, see the wiki for more details.
  *
  */
-public class ApplicationTest {
+public class ApplicationControllerTest {
 
     @Test
     public void simpleCheck() {
@@ -36,9 +36,9 @@ public class ApplicationTest {
 
     @Test
     public void renderTemplate() {
-        Content html = views.html.index.render("Your new application is ready.");
+        Content html = views.html.index.render();
         assertEquals("text/html", html.contentType());
-        assertTrue(html.body().contains("Your new application is ready."));
+        //assertTrue(html.body().contains("Your new application is ready."));
     }
 
 

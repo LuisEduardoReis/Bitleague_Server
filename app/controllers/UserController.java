@@ -1,8 +1,8 @@
 package controllers;
 
-import play.Logger;
+
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import play.libs.Json;
-import play.libs.ws.WSClient;
 import play.mvc.*;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -10,7 +10,6 @@ import org.jongo.MongoCursor;
 
 import models.User;
 
-import javax.inject.Inject;
 
 public class UserController extends Controller {
 
@@ -20,6 +19,7 @@ public class UserController extends Controller {
         MongoCursor<User> users = User.users()
                 .find().skip(page*page_size).limit(page_size)
                 .as(User.class);
+
         return ok(Json.toJson(users));
     }
 

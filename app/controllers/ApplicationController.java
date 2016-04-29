@@ -12,7 +12,7 @@ import views.html.index;
 import views.html.chat;
 
 
-public class Application extends Controller {
+public class ApplicationController extends Controller {
 
     public Result index() { return ok(index.render()); }
 
