@@ -16,6 +16,10 @@ DELETE  /api/user                        controllers.UserController.deleteUser(i
 
 POST     /api/login                       controllers.AuthenticationController.login
 
+# Players
+GET     /api/players                    controllers.DataController.getPlayers
+
+
 # An example controller showing how to use dependency injection
 GET     /count                      controllers.CountController.count
 # An example controller showing how to write asynchronous code
