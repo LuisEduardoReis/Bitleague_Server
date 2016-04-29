@@ -6,6 +6,10 @@ lazy val root = (project in file(".")).enablePlugins(PlayJava)
 
 scalaVersion := "2.11.7"
 
+resolvers += "release repository" at "http://chanan.github.io/maven-repo/releases/"
+
+resolvers += "snapshot repository" at "http://chanan.github.io/maven-repo/snapshots/"
+
 libraryDependencies ++= Seq(
   javaJdbc,
   cache,
