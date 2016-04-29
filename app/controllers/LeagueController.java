@@ -114,7 +114,17 @@ public class LeagueController extends Controller {
     }
 
     public Result deleteLeague(String id) {
+
+        if (!request().hasHeader("Authorization")) return unauthorized("Missing authorization header");
+
+        User user_t = User.findByToken(request().getHeader("Authorization"));
+        if (user_t == null) return unauthorized("Invalid authorization token: user not found!");
+
         League league = League.findById(id);
+        if(league != null) return  notFound();
+
+        if(!(user_t.isAdmin|| league.creator.equals(user_t.id.toString()))) return unauthorized();
+
         if (league != null) {
             league.remove();
             return ok();
