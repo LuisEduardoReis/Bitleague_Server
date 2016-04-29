@@ -64,7 +64,7 @@ public class LeagueController extends Controller {
 
         League league = League.findById(params.get("id"));
         if(league == null)
-            return notFound();
+            return notFound("League not found");
 
         User user_t = User.findByToken(request().getHeader("Authorization"));
         if (user_t == null) return unauthorized("Invalid authorization token: user not found!");
@@ -121,7 +121,7 @@ public class LeagueController extends Controller {
         if (user_t == null) return unauthorized("Invalid authorization token: user not found!");
 
         League league = League.findById(id);
-        if(league != null) return  notFound();
+        if(league != null) return  notFound("League not found");
 
         if(!(user_t.isAdmin|| league.creator.equals(user_t.id.toString()))) return unauthorized();
 
