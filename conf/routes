@@ -3,31 +3,39 @@
 # ~~~~
 
 # An example controller showing a sample home page
-GET     /                           controllers.Application.index
-GET     /chat                       controllers.Application.chat
+GET         /                               controllers.ApplicationController.index
+GET         /chat                           controllers.ApplicationController.chat
 
 # API
 # Users
-GET     /api/users                       controllers.UserController.getUsers(page: Int ?= 0, page_size : Int ?= 10)
-GET     /api/user                        controllers.UserController.getUser(id: String ?= "")
+GET         /api/users                  controllers.UserController.getUsers(page: Int ?= 0, page_size : Int ?= 10)
+GET         /api/user                   controllers.UserController.getUser(id: String ?= "")
 
-POST    /api/user                        controllers.UserController.addUser
-DELETE  /api/user                        controllers.UserController.deleteUser(id: String ?= "")
+POST        /api/user                   controllers.UserController.addUser
+DELETE      /api/user                   controllers.UserController.deleteUser(id: String ?= "")
 
 # Auth
 POST     /api/login                       controllers.AuthenticationController.login
 
+# Players
+GET         /api/players                controllers.DataController.getPlayers
+
 #Draft
 GET     /api/draft/poll                  controllers.DraftController.poll(id: String ?= "")
 
-# An example controller showing how to use dependency injection
-GET     /count                      controllers.CountController.count
-# An example controller showing how to write asynchronous code
-GET     /message                    controllers.AsyncController.message
+
+
+# Leagues
+GET         /api/leagues                controllers.LeagueController.getLeagues(page: Int ?= 0, page_size : Int ?= 10)
+GET         /api/league                 controllers.LeagueController.getLeague(id: String ?= "")
+
+POST        /api/league                 controllers.LeagueController.addLeague
+POST        /api/league/user            controllers.LeagueController.addUser
+DELETE      /api/league                 controllers.LeagueController.deleteLeague(id: String ?= "")
+
+
 
 # Map static resources from the /public folder to the /assets URL path
-#GET     /assets/*file               controllers.Assets.versioned(path="/public", file: Asset)
-
 GET        /assets/*file         controllers.Assets.at(path="/public", file)
 #GET        /webjars/*file        controllers.WebJarAssets.at(file)
 

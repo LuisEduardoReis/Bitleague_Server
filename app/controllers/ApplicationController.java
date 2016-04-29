@@ -6,7 +6,7 @@ import views.html.chat;
 import views.html.index;
 
 
-public class Application extends Controller {
+public class ApplicationController extends Controller {
 
     public Result index() { return ok(index.render()); }
 
