@@ -10,6 +10,7 @@ libraryDependencies ++= Seq(
   javaJdbc,
   cache,
   javaWs,
+  filters,
   "signalJ" %% "signalj" % "0.5.0",
   "org.webjars" %% "webjars-play" % "2.3.0-2",
   "org.webjars" % "bootstrap" % "3.3.1",

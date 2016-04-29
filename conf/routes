@@ -8,13 +8,13 @@ GET     /chat                       controllers.Application.chat
 
 # API
 # Users
-GET     /api/users                       controllers.Application.getUsers(page: Int ?= 0, page_size : Int ?= 10)
-GET     /api/user                        controllers.Application.getUser(id: String ?= "")
+GET     /api/users                       controllers.UserController.getUsers(page: Int ?= 0, page_size : Int ?= 10)
+GET     /api/user                        controllers.UserController.getUser(id: String ?= "")
 
+POST    /api/user                        controllers.UserController.addUser
+DELETE  /api/user                        controllers.UserController.deleteUser(id: String ?= "")
 
-POST    /api/user                        controllers.Application.addUser
-DELETE  /api/user                        controllers.Application.deleteUser(id: String ?= "")
-
+POST     /api/login                       controllers.AuthenticationController.login
 
 # Leagues
 GET     /api/leagues                     controllers.LeagueApi.getLeagues(page: Int ?= 0, page_size : Int ?= 10)
