@@ -7,6 +7,8 @@ import org.jongo.marshall.jackson.oid.MongoId;
 import play.Play;
 import uk.co.panaxiom.playjongo.PlayJongo;
 
+import java.util.ArrayList;
+
 public class League extends Model {
 
     public static MongoCollection leagues() {
@@ -14,9 +16,12 @@ public class League extends Model {
     }
 
     @MongoId
-    public String id;
+    public ObjectId id;
 
     public String name;
+
+    public String creator;
+    public String[] users;
 
     public League insert() { leagues().save(this); return this; }
 

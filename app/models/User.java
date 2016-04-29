@@ -41,6 +41,13 @@ public class User extends Model {
         try {return users().findOne(new ObjectId(id)).as(User.class);}
         catch(Exception e) { return null; }
     }
+
+    public static User findByObjectId(ObjectId id)
+    {
+        try {return users().findOne(id).as(User.class);}
+        catch(Exception e) { return null; }
+    }
+
     public static User findByName(String name) {
         return users().findOne("{name: #}", name).as(User.class);
     }

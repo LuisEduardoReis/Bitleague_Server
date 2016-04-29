@@ -17,11 +17,12 @@ DELETE  /api/user                        controllers.UserController.deleteUser(i
 POST     /api/login                       controllers.AuthenticationController.login
 
 # Leagues
-GET     /api/leagues                     controllers.LeagueApi.getLeagues(page: Int ?= 0, page_size : Int ?= 10)
-GET     /api/league                      controllers.LeagueApi.getLeague(id: String ?= "")
+GET     /api/leagues                     controllers.LeagueController.getLeagues(page: Int ?= 0, page_size : Int ?= 10)
+GET     /api/league                      controllers.LeagueController.getLeague(id: String ?= "")
 
-POST    /api/league                        controllers.LeagueApi.addLeague
-DELETE  /api/league                      controllers.LeagueApi.deleteLeague(id: String ?= "")
+POST    /api/league                        controllers.LeagueController.addLeague
+PUT     /api/league                      controllers.LeagueController.addUser
+DELETE  /api/league                      controllers.LeagueController.deleteLeague(id: String ?= "")
 
 
 
