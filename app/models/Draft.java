@@ -15,7 +15,7 @@ public class Draft extends Model {
     @MongoId
     public ObjectId id;
     public String league;
-    public Map<String, Long> users = new HashMap<>();
+    public Map<String, Boolean> online_users = new HashMap<>();
 
 
     public static Draft findById(String id) {

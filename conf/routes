@@ -5,6 +5,7 @@
 # An example controller showing a sample home page
 GET         /                               controllers.ApplicationController.index
 GET         /chat                           controllers.ApplicationController.chat
+GET         /socket                         controllers.DraftController.socket
 
 # API
 # Users
