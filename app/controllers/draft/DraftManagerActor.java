@@ -7,13 +7,15 @@ import akka.actor.UntypedActor;
 import models.User;
 import play.Logger;
 
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.List;
 
 
-public class DraftManager extends UntypedActor {
+public class DraftManagerActor extends UntypedActor {
 
-    public static Props props = Props.create(DraftManager.class);
+    public static Props props = Props.create(DraftManagerActor.class);
 
     public boolean started;
     public Cancellable cancel;
@@ -21,12 +23,17 @@ public class DraftManager extends UntypedActor {
     public String league_id;
     public HashMap<String, UserActor> userActors;
 
-    public DraftManager() {
+    public int turn;
+    public List<Pick> picks;
+
+    public DraftManagerActor() {
         this.started = false;
         this.cancel = null;
 
         this.league_id = "";
         this.userActors = new HashMap<>();
+
+        this.picks = new ArrayList<>();
     }
 
     @Override
@@ -44,6 +51,7 @@ public class DraftManager extends UntypedActor {
             this.userActors.put(user.id, user);
 
             SendUserListUpdate();
+            user.ref.tell(new PickList(picks), self());
         } else
         if (message instanceof RemoveUserActor) {
             RemoveUserActor rem = (RemoveUserActor) message;
@@ -52,6 +60,14 @@ public class DraftManager extends UntypedActor {
                     userActors.remove(e.getKey());
             }
             SendUserListUpdate();
+        } else
+        if (message instanceof MakePick) {
+            MakePick pick = (MakePick) message;
+            picks.add(new Pick(pick.user_id, pick.player_id));
+
+            for(UserActor a : userActors.values()) {
+                a.ref.tell(pick, self());
+            }
         } else
         if (message instanceof String) {
             Logger.info((String)message);
@@ -69,6 +85,15 @@ public class DraftManager extends UntypedActor {
         public String id;
         public String name;
         public ActorRef ref;
+    }
+
+    public class Pick {
+        public String user_id;
+        public String player_id;
+        public Pick(String user_id, String player_id) {
+            this.user_id = user_id;
+            this.player_id = player_id;
+        }
     }
 
     // Messages
@@ -102,4 +127,21 @@ public class DraftManager extends UntypedActor {
             this.users = users;
         }
     }
+
+    public static class MakePick {
+        public final String player_id;
+        public final String user_id;
+        public MakePick(String user_id, String player_id) {
+            this.user_id = user_id;
+            this.player_id = player_id;
+        }
+    }
+
+    public static class PickList {
+        public final List<Pick> picks;
+        public PickList(List<Pick> picks) {
+            this.picks = picks;
+        }
+    }
+
 }
