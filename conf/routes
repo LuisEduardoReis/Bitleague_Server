@@ -22,11 +22,11 @@ GET         /api/players            controllers.DataController.getPlayers
 
 #Draft
 GET         /api/socket             controllers.draft.DraftController.socket
-GET         /api/draft/start        controllers.draft.DraftController.startDraft(league_id: String ?= "")
+GET         /api/draft/start        controllers.draft.DraftController.startDraft(id: String ?= "")
 
 
 # Leagues
-GET         /api/leagues            controllers.LeagueController.getLeagues(page: Int ?= 0, page_size : Int ?= 10)
+GET         /api/leagues            controllers.LeagueController.getLeagues()
 GET         /api/league             controllers.LeagueController.getLeague(id: String ?= "")
 
 POST        /api/league             controllers.LeagueController.addLeague

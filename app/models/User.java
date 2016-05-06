@@ -16,6 +16,7 @@ import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
 import java.util.Date;
+import java.util.HashMap;
 
 public class User extends Model {
 
@@ -31,6 +32,7 @@ public class User extends Model {
     public boolean isAdmin;
     public Date created_at;
     public Date active_at;
+    public HashMap<String,Boolean> leagues = new HashMap<>();
 
     public User() {
         this.created_at = new Date();
