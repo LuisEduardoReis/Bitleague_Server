@@ -3,30 +3,35 @@
 # ~~~~
 
 # An example controller showing a sample home page
-GET         /                               controllers.ApplicationController.index
-GET         /chat                           controllers.ApplicationController.chat
+GET         /                       controllers.ApplicationController.index
+GET         /chat                   controllers.ApplicationController.chat
 
 # API
 # Users
-GET         /api/users                  controllers.UserController.getUsers(page: Int ?= 0, page_size : Int ?= 10)
-GET         /api/user                   controllers.UserController.getUser(id: String ?= "")
+GET         /api/users              controllers.UserController.getUsers(page: Int ?= 0, page_size : Int ?= 10)
+GET         /api/user               controllers.UserController.getUser(id: String ?= "")
 
-POST        /api/user                   controllers.UserController.addUser
-DELETE      /api/user                   controllers.UserController.deleteUser(id: String ?= "")
+POST        /api/user               controllers.UserController.addUser
+DELETE      /api/user               controllers.UserController.deleteUser(id: String ?= "")
 
-POST        /api/login                  controllers.AuthenticationController.login
+# Auth
+POST     /api/login                 controllers.AuthenticationController.login
 
 # Players
-GET         /api/players                controllers.DataController.getPlayers
+GET         /api/players            controllers.DataController.getPlayers
+
+#Draft
+GET         /api/socket             controllers.draft.DraftController.socket
+GET         /api/draft/start        controllers.draft.DraftController.startDraft(league_id: String ?= "")
 
 
 # Leagues
-GET         /api/leagues                controllers.LeagueController.getLeagues(page: Int ?= 0, page_size : Int ?= 10)
-GET         /api/league                 controllers.LeagueController.getLeague(id: String ?= "")
+GET         /api/leagues            controllers.LeagueController.getLeagues(page: Int ?= 0, page_size : Int ?= 10)
+GET         /api/league             controllers.LeagueController.getLeague(id: String ?= "")
 
-POST        /api/league                 controllers.LeagueController.addLeague
-POST        /api/league/user            controllers.LeagueController.addUser
-DELETE      /api/league                 controllers.LeagueController.deleteLeague(id: String ?= "")
+POST        /api/league             controllers.LeagueController.addLeague
+POST        /api/league/user        controllers.LeagueController.addUser
+DELETE      /api/league             controllers.LeagueController.deleteLeague(id: String ?= "")
 
 
 

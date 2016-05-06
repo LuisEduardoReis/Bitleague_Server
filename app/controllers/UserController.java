@@ -10,10 +10,17 @@ import org.jongo.MongoCursor;
 
 import models.User;
 
+import java.math.BigInteger;
+import java.security.SecureRandom;
+
 
 public class UserController extends Controller {
 
     // User
+    public static final SecureRandom random = new SecureRandom();
+    public static String nextToken() {
+        return new BigInteger(250, random).toString(32);
+    }
 
     public Result getUsers(int page, int page_size) {
         MongoCursor<User> users = User.users()
@@ -34,6 +41,7 @@ public class UserController extends Controller {
         return ok(Json.toJson(user));
     }
 
+    @Deprecated
     @BodyParser.Of(BodyParser.Json.class)
     public Result addUser() {
         JsonNode json = request().body().asJson();
@@ -44,6 +52,7 @@ public class UserController extends Controller {
 
         User user = new User();
         user.name = name;
+        user.token = nextToken();
         user.insert();
 
         return created("User created");

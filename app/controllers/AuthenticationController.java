@@ -26,11 +26,6 @@ public class AuthenticationController extends Controller{
     private String appClientId = "1001329453281741";
     private String appClientSecret = "aaa9b8bf2a7e4c5463831e644676d39b";
 
-    private SecureRandom random = new SecureRandom();
-    private String nextToken() {
-        return new BigInteger(250, random).toString(32);
-    }
-
     private String getAppAccessToken() {
         if (appAccessToken != null) return appAccessToken;
         try {
@@ -78,7 +73,7 @@ public class AuthenticationController extends Controller{
         String fb_id = fb_json.findValue("user_id").textValue();
         User user = User.findOrCreateByFacebookId(fb_id, getAppAccessToken());
 
-        String token = nextToken();
+        String token = UserController.nextToken();
         user.token = token;
         user.insert();
 

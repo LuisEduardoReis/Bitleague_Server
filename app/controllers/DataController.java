@@ -6,23 +6,28 @@ import play.libs.Json;
 import play.mvc.*;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 
 import static play.mvc.Results.ok;
 
 
 public class DataController {
 
-    public Result getPlayers() {
+    public static HashMap<String, Season.Player> getPlayersHash() {
         Season season = Season.seasons().findOne().as(Season.class);
-        ArrayList<Season.Player> players = new ArrayList<>();
+        HashMap<String, Season.Player> players = new HashMap<>();
         for(Season.League league : season.leagues) {
             for(Season.Team team : league.teams) {
                 for(Season.Player player : team.players) {
                     player.team = team.name;
-                    players.add(player);
+                    players.put(""+player._id, player);
                 }
             }
         }
-        return ok(Json.toJson(players));
+        return players;
+    }
+
+    public Result getPlayers() {
+        return ok(Json.toJson(getPlayersHash()));
     }
 }

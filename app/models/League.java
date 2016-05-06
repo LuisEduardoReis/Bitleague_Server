@@ -14,6 +14,9 @@ import java.util.Map;
 
 public class League extends Model {
 
+    public static final int NUM_USERS = 8;
+    public static final int SNAKE_ORDER[] = {0,1,2,3,4,5,6,7,7,6,5,4,3,2,1,0};
+
     public static MongoCollection leagues() {
         return jongo.getCollection("leagues");
     }
@@ -39,4 +42,7 @@ public class League extends Model {
         return leagues().findOne("{name: #}", name).as(League.class);
     }
 
+    public boolean readyForDraft() {
+        return users.size() == NUM_USERS;
+    }
 }
