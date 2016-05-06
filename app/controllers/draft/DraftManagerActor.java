@@ -95,7 +95,7 @@ public class DraftManagerActor extends UntypedActor {
                 if (lastTick > 0) {
                     float elapsed = (float) ((time - lastTick)/1e9);
                     timer = Math.max(timer-elapsed, 0);
-                    if (timer == 0) DoPick("");
+                    if (timer == 0 || !userActors.containsKey(currentUser)) DoPick(null);
                 }
                 TurnUpdate update = new TurnUpdate(currentUser, Math.round(timer));
                 for(ActorRef ref : userActors.values()) {
@@ -110,13 +110,18 @@ public class DraftManagerActor extends UntypedActor {
 
 
     private void DoPick(String player_id) {
+        if (player_id == null || !playersLeft.containsKey(player_id)) {
+            player_id = ""+playersLeft.get(playersLeft.keySet().iterator().next())._id;
+        }
+
+        playersLeft.remove(player_id);
         picks.add(new Pick(currentUser, player_id));
         for(ActorRef ref : userActors.values()) {
             ref.tell(new MakePick(currentUser, player_id), self());
         }
         turn++;
         timer = TURN_TIME;
-        currentUser = users.get(turn % users.size());
+        currentUser = users.get(League.SNAKE_ORDER[turn%(2*League.NUM_USERS)]);
     }
 
     private void SendUserListUpdate() {
