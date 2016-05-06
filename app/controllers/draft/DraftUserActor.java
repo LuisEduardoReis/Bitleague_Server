@@ -12,9 +12,6 @@ import models.User;
 import play.Logger;
 import play.libs.Json;
 
-/**
- * Created by Win7 on 4-5-2016.
- */
 public class DraftUserActor extends UntypedActor {
 
     public static Props props(ActorRef out) { return Props.create(DraftUserActor.class, out); }
@@ -65,29 +62,36 @@ public class DraftUserActor extends UntypedActor {
                 }
             } catch(Exception e) {
                 Logger.error(e.toString());
+                out.tell("close", self());
                 self().tell(PoisonPill.getInstance(), self());
             }
         } else if (message instanceof DraftManagerActor.UserListUpdate) {
             DraftManagerActor.UserListUpdate update = (DraftManagerActor.UserListUpdate) message;
             ObjectNode res = Json.newObject();
             res.put("event","user_list");
-            ObjectNode list = Json.newObject();
-            for(DraftManagerActor.UserActor user : update.users) {
-                list.put(user.id, user.name);
-            }
-            res.put("data",list);
+            ObjectNode data = Json.newObject();
+                data.put("users", Json.toJson(update.users));
+                data.put("usernames", Json.toJson(update.usernames));
+                data.put("online", Json.toJson(update.online));
+            res.put("data",data);
             out.tell(res.toString(),self());
         } else if (message instanceof DraftManagerActor.PickList) {
             DraftManagerActor.PickList picks = (DraftManagerActor.PickList) message;
             ObjectNode res = Json.newObject();
-            res.put("event","pick_list");
-            res.put("data",Json.toJson(picks.picks));
+                res.put("event","pick_list");
+                res.put("data",Json.toJson(picks.picks));
             out.tell(res.toString(), self());
         } else if (message instanceof  DraftManagerActor.MakePick) {
             DraftManagerActor.MakePick pick = (DraftManagerActor.MakePick) message;
             ObjectNode res = Json.newObject();
-            res.put("event","pick");
-            res.put("data",Json.toJson(pick));
+                res.put("event","pick");
+                res.put("data",Json.toJson(pick));
+            out.tell(res.toString(), self());
+        } else if (message instanceof DraftManagerActor.TurnUpdate) {
+            DraftManagerActor.TurnUpdate update = (DraftManagerActor.TurnUpdate) message;
+            ObjectNode res = Json.newObject();
+                res.put("event","turn_update");
+                res.put("data",Json.toJson(update));
             out.tell(res.toString(), self());
         }
     }

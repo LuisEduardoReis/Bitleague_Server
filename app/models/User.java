@@ -15,6 +15,7 @@ import java.io.BufferedReader;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.net.URLConnection;
+import java.util.Date;
 
 public class User extends Model {
 
@@ -28,12 +29,15 @@ public class User extends Model {
     public String facebook_id;
     public String token;
     public boolean isAdmin;
+    public Date created_at;
+    public Date active_at;
 
     public User() {
+        this.created_at = new Date();
         this.isAdmin = false;
     }
 
-    public User insert() { users().save(this); return this; }
+    public User insert() { this.active_at = new Date(); users().save(this); return this; }
 
     public void remove() { users().remove(this.id); }
 

@@ -39,4 +39,7 @@ public class League extends Model {
         return leagues().findOne("{name: #}", name).as(League.class);
     }
 
+    public boolean readyForDraft() {
+        return users.size() == 8;
+    }
 }
