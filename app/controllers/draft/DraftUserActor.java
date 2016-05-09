@@ -51,6 +51,7 @@ public class DraftUserActor extends UntypedActor {
                     user_id = user_t.id.toString();
 
                     draftManager = DraftController.getDraftManager(parameterParser.get("league_id"));
+                    if (draftManager == null) throw new RuntimeException("Draft not found!");
                     draftManager.tell(new DraftManagerActor.AddUserActor(user_t.id.toString(), self()), self());
 
                     out.tell("initialized", self());
@@ -62,6 +63,7 @@ public class DraftUserActor extends UntypedActor {
                 }
             } catch(Exception e) {
                 Logger.error(e.toString());
+                out.tell("error - " + e.toString(), self());
                 out.tell("close", self());
                 self().tell(PoisonPill.getInstance(), self());
             }
