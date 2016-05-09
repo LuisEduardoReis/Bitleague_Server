@@ -1,8 +1,11 @@
 package controllers.draft;
 
 import akka.actor.*;
+import com.fasterxml.jackson.databind.JsonNode;
 import com.google.inject.Inject;
+import helper.ParameterParser;
 import models.League;
+import models.User;
 import play.Logger;
 import play.mvc.*;
 import scala.concurrent.duration.Duration;
@@ -34,8 +37,27 @@ public class DraftController extends Controller {
         return draftManagers.get(league_id);
     }
 
-    public Result startDraft(String league_id) {
-        Logger.info(league_id);
+    public Result startDraft() {
+        if (!request().hasHeader("Authorization")) return unauthorized("Missing authorization header");
+
+        JsonNode json = request().body().asJson();
+        String args[] = {"id"};
+        ParameterParser params = new ParameterParser(json, args);
+        if (!params.success) return badRequest(params.reason);
+
+        String league_id = params.get("id");
+
+        League league = League.findById(league_id);
+        if (league == null) return notFound("League not found");
+
+        User user_t = User.findByToken(request().getHeader("Authorization"));
+        if (user_t == null) return unauthorized("Invalid authorization token: user not found!");
+
+        if (!league.creator.equals(user_t.id.toString())) return unauthorized("You are not this league's creator!");
+
+        if (!league.readyForDraft()) return badRequest("This league's draft is not ready to start");
+
+        Logger.info("Draft "+league_id+" started");
         ActorRef draftManager = getDraftManager(league_id);
 
         Cancellable cancel = system.scheduler().schedule(

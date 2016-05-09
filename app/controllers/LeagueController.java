@@ -2,11 +2,14 @@ package controllers;
 
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 import helper.ParameterParser;
 import models.League;
 import models.User;
 import org.bson.types.ObjectId;
 import org.jongo.MongoCursor;
+import play.Logger;
 import play.api.libs.json.JsArray;
 import play.libs.Json;
 import play.mvc.BodyParser;
@@ -24,21 +27,48 @@ public class LeagueController extends Controller {
 
     // League
 
-    public Result getLeagues(int page, int page_size) {
+    public Result getLeagues() {
         if (!request().hasHeader("Authorization")) return unauthorized("Missing authorization header");
 
-        MongoCursor<League> leagues = League.leagues()
-                .find().skip(page*page_size).limit(page_size)
-                .as(League.class);
-        return ok(Json.toJson(leagues));
+        User user = User.findByToken(request().getHeader("Authorization"));
+        if (user == null) return unauthorized("Invalid authorization token: user not found!");
+
+        ArrayNode leagues = Json.newArray();
+        for(String league_id : user.leagues.keySet()) {
+            League league = League.findById(league_id);
+            ObjectNode node = Json.newObject();
+                node.put("id", league.id.toString());
+                node.put("name", league.name);
+            leagues.add(node);
+        }
+
+        return ok(leagues);
     }
 
     public Result getLeague(String id) {
         if (!request().hasHeader("Authorization")) return unauthorized("Missing authorization header");
 
         League league = League.findById(id);
-        if (league != null) return ok(Json.toJson(league));
-        else return notFound("League not found");
+        if (league == null) return notFound("League not found");
+
+        User user_t = User.findByToken(request().getHeader("Authorization"));
+        if (user_t == null) return unauthorized("Invalid authorization token: user not found!");
+
+        if (!league.users.containsKey(user_t.id.toString())) return unauthorized("You do not have access to this league!");
+
+        ObjectNode league_json = Json.newObject();
+            league_json.put("id", id);
+            league_json.put("name", league.name);
+            ArrayNode users = Json.newArray();
+            for(String user_id : league.users.keySet()) {
+                ObjectNode user_node = Json.newObject();
+                    User user = User.findById(user_id);
+                    user_node.put("id",user_id);
+                    user_node.put("name",user.name);
+                users.add(user_node);
+            }
+            league_json.put("users",users);
+        return ok(Json.toJson(league_json));
     }
 
 
@@ -47,19 +77,22 @@ public class LeagueController extends Controller {
         if (!request().hasHeader("Authorization")) return unauthorized("Missing authorization header");
 
         JsonNode json = request().body().asJson();
-        String args[] = {"league_id"};
+        String args[] = {"id"};
         ParameterParser params = new ParameterParser(json, args);
         if (!params.success) return badRequest(params.reason);
 
-        League league = League.findById(params.get("league_id"));
+        League league = League.findById(params.get("id"));
         if(league == null) return notFound("League not found");
 
-        User user_t = User.findByToken(request().getHeader("Authorization"));
-        if (user_t == null) return unauthorized("Invalid authorization token: user not found!");
+        User user = User.findByToken(request().getHeader("Authorization"));
+        if (user == null) return unauthorized("Invalid authorization token: user not found!");
 
 
-        league.users.put(user_t.id.toString(), true);
+        league.users.put(user.id.toString(), true);
         league.insert();
+
+        user.leagues.put(league.id.toString(), true);
+        user.insert();
 
         return ok(Json.toJson(league.users));
     }
@@ -74,11 +107,11 @@ public class LeagueController extends Controller {
         ParameterParser params = new ParameterParser(json, args);
         if (!params.success) return badRequest(params.reason);
 
-        User user_t = User.findByToken(request().getHeader("Authorization"));
-        if (user_t == null) return unauthorized("Invalid authorization token: user not found!");
+        User user = User.findByToken(request().getHeader("Authorization"));
+        if (user == null) return unauthorized("Invalid authorization token: user not found!");
 
 
-        String creator =  user_t.id.toString();
+        String creator =  user.id.toString();
         String name = params.get("name");
 
         League league = new League();
@@ -86,6 +119,9 @@ public class LeagueController extends Controller {
         league.creator = creator;
         league.users.put(creator,true);
         league.insert();
+
+        user.leagues.put(league.id.toString(), true);
+        user.insert();
 
         return created("League created");
     }

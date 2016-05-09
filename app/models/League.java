@@ -43,6 +43,7 @@ public class League extends Model {
     }
 
     public boolean readyForDraft() {
-        return users.size() == NUM_USERS;
+        return true;
+        //return users.size() == NUM_USERS;
     }
 }
