@@ -22,7 +22,7 @@ GET         /api/players            controllers.DataController.getPlayers
 
 #Draft
 GET         /api/socket             controllers.draft.DraftController.socket
-GET         /api/draft/start        controllers.draft.DraftController.startDraft(id: String ?= "")
+POST         /api/draft/start        controllers.draft.DraftController.startDraft
 
 
 # Leagues

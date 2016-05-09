@@ -51,12 +51,24 @@ public class LeagueController extends Controller {
         League league = League.findById(id);
         if (league == null) return notFound("League not found");
 
-        User user = User.findByToken(request().getHeader("Authorization"));
-        if (user == null) return unauthorized("Invalid authorization token: user not found!");
+        User user_t = User.findByToken(request().getHeader("Authorization"));
+        if (user_t == null) return unauthorized("Invalid authorization token: user not found!");
 
-        if (!user.leagues.containsKey(id)) return unauthorized("You do not have access to this league!");
+        if (!league.users.containsKey(user_t.id.toString())) return unauthorized("You do not have access to this league!");
 
-        return ok(Json.toJson(league));
+        ObjectNode league_json = Json.newObject();
+            league_json.put("id", id);
+            league_json.put("name", league.name);
+            ArrayNode users = Json.newArray();
+            for(String user_id : league.users.keySet()) {
+                ObjectNode user_node = Json.newObject();
+                    User user = User.findById(user_id);
+                    user_node.put("id",user_id);
+                    user_node.put("name",user.name);
+                users.add(user_node);
+            }
+            league_json.put("users",users);
+        return ok(Json.toJson(league_json));
     }
 
 
@@ -65,11 +77,11 @@ public class LeagueController extends Controller {
         if (!request().hasHeader("Authorization")) return unauthorized("Missing authorization header");
 
         JsonNode json = request().body().asJson();
-        String args[] = {"league_id"};
+        String args[] = {"id"};
         ParameterParser params = new ParameterParser(json, args);
         if (!params.success) return badRequest(params.reason);
 
-        League league = League.findById(params.get("league_id"));
+        League league = League.findById(params.get("id"));
         if(league == null) return notFound("League not found");
 
         User user = User.findByToken(request().getHeader("Authorization"));

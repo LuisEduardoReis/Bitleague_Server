@@ -121,7 +121,9 @@ public class DraftManagerActor extends UntypedActor {
         }
         turn++;
         timer = TURN_TIME;
-        currentUser = users.get(League.SNAKE_ORDER[turn%(2*League.NUM_USERS)]);
+        //currentUser = users.get(League.SNAKE_ORDER[turn%(2*League.NUM_USERS)]);
+        int n = users.size();
+        currentUser = users.get(turn % n);
     }
 
     private void SendUserListUpdate() {
