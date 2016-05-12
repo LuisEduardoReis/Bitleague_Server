@@ -32,6 +32,7 @@ public class DraftManagerActor extends UntypedActor {
     public String currentUser;
     public List<Pick> picks;
     public HashMap<String, Season.Player> playersLeft;
+    public HashMap<String, ArrayList<MakePick>> shortLists;
 
     public DraftManagerActor() {
         this.started = false;
@@ -48,6 +49,7 @@ public class DraftManagerActor extends UntypedActor {
         this.currentUser = "";
         this.picks = new ArrayList<>();
         this.playersLeft = DataController.getPlayersHash();
+        this.shortLists = new HashMap<>();
     }
 
     @Override
@@ -86,7 +88,16 @@ public class DraftManagerActor extends UntypedActor {
         if (message instanceof MakePick) {
             MakePick pick = (MakePick) message;
             Logger.info(pick.user_id+ " " + currentUser);
-            if (pick.user_id.equals(currentUser)) DoPick(pick.player_id);
+            if (pick.user_id.equals(currentUser))
+            {
+                DoPick(pick.player_id);
+            }
+            else
+            {
+                AddToShortList(pick);
+            }
+
+
         } else
         if (message instanceof String) {
             String string = (String) message;
@@ -107,6 +118,35 @@ public class DraftManagerActor extends UntypedActor {
         }
     }
 
+
+    private void AddToShortList(MakePick pick) {
+        if (pick.player_id == null) {
+           return;
+        }
+        ArrayList<MakePick> shortList = new ArrayList<>();
+        if(!shortLists.containsKey(pick.player_id))
+        {
+            shortList.add(pick);
+            shortLists.put(pick.player_id, shortList);
+        }
+        else
+        {
+            shortList = shortLists.get(pick.player_id);
+            if(shortList.contains(pick)) {
+                return;
+            }
+            else {
+                shortList.add(pick);
+                shortLists.put(pick.player_id, shortList);
+            }
+        }
+
+
+        ActorRef self = userActors.get(pick.player_id);
+
+
+
+    }
 
 
     private void DoPick(String player_id) {

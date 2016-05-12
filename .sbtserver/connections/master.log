@@ -1,0 +1,9 @@
+New log file opened at Fri Apr 29 15:21:54 BST 2016 by 18356@DESKTOP-C33GIPB
+Taking next connection to: 52896
+New client attempting to connect on port: 52898-52896
+  Address = /192.168.56.1:52896
+Server socket closed java.net.SocketException: Connection reset by peer: socket write error
+Server socket thread exiting.
+0 clients open, will close them...
+All client sockets have been closed.
+Closing the 18356@DESKTOP-C33GIPB logs at Fri Apr 29 15:22:32 BST 2016, goodbye.
