@@ -19,6 +19,7 @@ POST     /api/login                 controllers.AuthenticationController.login
 
 # Players
 GET         /api/players            controllers.DataController.getPlayers
+#GET         /api/gen_players        controllers.DataController.genPlayers
 
 #Draft
 GET         /api/socket             controllers.draft.DraftController.socket
