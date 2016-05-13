@@ -65,10 +65,14 @@ public class League extends Model {
         {
             if(teams.containsKey(pick.user_id))
             {
-                
+                UserTeam team = teams.get(pick.user_id);
+                team.addPlayer(pick.player_id);
+                teams.put(pick.user_id, team);
             }
             else {
-                UserTeam ut = teams.get(pick.user_id);
+                UserTeam team = teams.get(pick.user_id);
+                team.addPlayer(pick.player_id);
+                teams.put(pick.user_id, team);
 
             }
         }
