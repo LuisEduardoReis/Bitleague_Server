@@ -104,4 +104,12 @@ public class UserTeam {
     public void setStrickers(ArrayList<String> strickers) {
         this.strickers = strickers;
     }
+
+    public String getGoalkeeper() {
+        return goalkeeper;
+    }
+
+    public void setGoalkeeper(String goalkeeper) {
+        this.goalkeeper = goalkeeper;
+    }
 }
