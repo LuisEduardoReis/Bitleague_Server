@@ -27,6 +27,8 @@ public class DraftManagerActor extends UntypedActor {
     public HashMap<String, String> usernames;
     public HashMap<String, ActorRef> userActors;
 
+    public HashMap<String, ArrayList<String>> teams;
+
     public float timer;
     public long lastTick;
     public int turn;
@@ -42,6 +44,7 @@ public class DraftManagerActor extends UntypedActor {
         this.users = new ArrayList<>();
         this.usernames = new HashMap<>();
         this.userActors = new HashMap<>();
+        this.teams = new HashMap<>();
 
         this.timer = TURN_TIME;
         this.lastTick = -1;
@@ -103,6 +106,7 @@ public class DraftManagerActor extends UntypedActor {
                         SendUpdate("noone", -1);
 
                         League league = League.findById(league_id);
+                        league.teams = this.teams;
                         league.state = League.State.DURATION;
                         league.insert();
                     }
@@ -124,6 +128,20 @@ public class DraftManagerActor extends UntypedActor {
         for(ActorRef ref : userActors.values()) {
             ref.tell(new MakePick(currentUser, player_id), self());
         }
+
+        ArrayList<String> team = new ArrayList<>();
+        if(teams.containsKey(currentUser))
+        {
+            team = teams.get(currentUser);
+            team.add(player_id);
+            teams.put(currentUser,team);
+        }
+        else
+        {
+            team.add(player_id);
+            teams.put(currentUser, team);
+        }
+
         turn++;
         timer = TURN_TIME;
         //currentUser = users.get(League.SNAKE_ORDER[turn%(2*League.NUM_USERS)]);

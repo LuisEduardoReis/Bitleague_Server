@@ -31,6 +31,8 @@ public class League extends Model {
     public String creator;
     public Map<String, Boolean> users;
 
+    public Map<String, ArrayList<String>> teams;
+
     public State state;
 
     public League() {
