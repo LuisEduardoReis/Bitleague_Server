@@ -17,6 +17,8 @@ public class League extends Model {
     public static final int NUM_USERS = 8;
     public static final int SNAKE_ORDER[] = {0,1,2,3,4,5,6,7,7,6,5,4,3,2,1,0};
 
+    public static enum State {INVITE, DRAFTING, DURATION}
+
     public static MongoCollection leagues() {
         return jongo.getCollection("leagues");
     }
@@ -27,7 +29,14 @@ public class League extends Model {
     public String name;
 
     public String creator;
-    public Map<String, Boolean> users = new HashMap<>();
+    public Map<String, Boolean> users;
+
+    public State state;
+
+    public League() {
+        state = State.INVITE;
+        users = new HashMap<>();
+    }
 
     public League insert() { leagues().save(this); return this; }
 

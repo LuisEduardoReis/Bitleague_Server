@@ -8,6 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import helper.ParameterParser;
+import models.League;
 import models.User;
 import play.Logger;
 import play.libs.Json;
@@ -47,14 +48,16 @@ public class DraftUserActor extends UntypedActor {
 
                     User user_t = User.findByToken(parameterParser.get("Authorization"));
                     if (user_t == null) throw new RuntimeException("Invalid authorization token: user not found!");
-
                     user_id = user_t.id.toString();
 
+                    League league = League.findById(parameterParser.get("league_id"));
+                    if (league == null) throw new RuntimeException("League not found!");
+                    if (league.state != League.State.INVITE && league.state != League.State.DRAFTING) throw new RuntimeException("League has already drafted.");
+
                     draftManager = DraftController.getDraftManager(parameterParser.get("league_id"));
-                    if (draftManager == null) throw new RuntimeException("Draft not found!");
                     draftManager.tell(new DraftManagerActor.AddUserActor(user_t.id.toString(), self()), self());
 
-                    out.tell("initialized", self());
+                    out.tell("initialized",self());
                     initialized = true;
                 } else if (event.equals("pick")){
                     if (!json.has("data") || !json.get("data").has("player_id")) return;

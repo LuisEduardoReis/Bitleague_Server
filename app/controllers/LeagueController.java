@@ -59,6 +59,8 @@ public class LeagueController extends Controller {
         ObjectNode league_json = Json.newObject();
             league_json.put("id", id);
             league_json.put("name", league.name);
+            league_json.put("creator", league.creator);
+            league_json.put("state", league.state.toString());
             ArrayNode users = Json.newArray();
             for(String user_id : league.users.keySet()) {
                 ObjectNode user_node = Json.newObject();
@@ -83,6 +85,8 @@ public class LeagueController extends Controller {
 
         League league = League.findById(params.get("id"));
         if(league == null) return notFound("League not found");
+
+        if (league.state != League.State.INVITE) return badRequest("League has already started");
 
         User user = User.findByToken(request().getHeader("Authorization"));
         if (user == null) return unauthorized("Invalid authorization token: user not found!");
@@ -133,15 +137,17 @@ public class LeagueController extends Controller {
         if (user_t == null) return unauthorized("Invalid authorization token: user not found!");
 
         League league = League.findById(id);
-        if(league != null) return  notFound("League not found");
+        if(league == null) return  notFound("League not found");
 
         if(!(user_t.isAdmin|| league.creator.equals(user_t.id.toString()))) return unauthorized();
 
-        if (league != null) {
-            league.remove();
-            return ok();
-        } else
-            return notFound("League not found");
+        for(String user_id : league.users.keySet()) {
+            User user = User.findById(user_id);
+            user.leagues.remove(id);
+            user.insert();
+        }
+        league.remove();
+        return ok();
     }
 
 }

@@ -16,6 +16,7 @@ import java.util.*;
 public class DraftManagerActor extends UntypedActor {
 
     private static final float TURN_TIME = 10;
+    private static final int PICKS_PER_PLAYER = 18;
     public static Props props = Props.create(DraftManagerActor.class);
 
     public boolean started;
@@ -56,57 +57,61 @@ public class DraftManagerActor extends UntypedActor {
             Init init = (Init) message;
             this.league_id = init.league_id;
             League league = League.findById(this.league_id);
-            for(String user_id : league.users.keySet()) {
+            for (String user_id : league.users.keySet()) {
                 User user = User.findById(user_id);
                 users.add(user_id);
                 usernames.put(user_id, user.name);
             }
-        } else
-        if (message instanceof Start) {
+        } else if (message instanceof Start) {
             if (cancel != null) cancel.cancel();
             this.cancel = ((Start) message).cancel;
             this.turn = 0;
             this.currentUser = users.get(0);
-        } else
-        if (message instanceof AddUserActor) {
+        } else if (message instanceof AddUserActor) {
             AddUserActor add = (AddUserActor) message;
             this.userActors.put(add.user_id, add.ref);
 
             SendUserListUpdate();
             add.ref.tell(new PickList(picks), self());
-        } else
-        if (message instanceof RemoveUserActor) {
+        } else if (message instanceof RemoveUserActor) {
             RemoveUserActor rem = (RemoveUserActor) message;
-            for(HashMap.Entry<String, ActorRef> e : userActors.entrySet()) {
+            for (HashMap.Entry<String, ActorRef> e : userActors.entrySet()) {
                 if (e.getValue() == rem.ref)
                     userActors.remove(e.getKey());
             }
             SendUserListUpdate();
-        } else
-        if (message instanceof MakePick) {
+        } else if (message instanceof MakePick) {
             MakePick pick = (MakePick) message;
-            Logger.info(pick.user_id+ " " + currentUser);
+            Logger.info(pick.user_id + " " + currentUser);
             if (pick.user_id.equals(currentUser)) DoPick(pick.player_id);
-        } else
-        if (message instanceof String) {
+        } else if (message instanceof String) {
             String string = (String) message;
             if (string == "tick") {
                 long time = System.nanoTime();
                 if (lastTick > 0) {
-                    float elapsed = (float) ((time - lastTick)/1e9);
-                    timer = Math.max(timer-elapsed, 0);
+                    float elapsed = (float) ((time - lastTick) / 1e9);
+                    timer = Math.max(timer - elapsed, 0);
                     if (timer == 0 || !userActors.containsKey(currentUser)) DoPick(null);
-                }
-                TurnUpdate update = new TurnUpdate(currentUser, Math.round(timer));
-                for(ActorRef ref : userActors.values()) {
-                    ref.tell(update, self());
+
+                    // Send update
+                    SendUpdate(currentUser, timer);
+
+                    // Finish
+                    if (turn >= users.size() * PICKS_PER_PLAYER) {
+                        cancel.cancel();
+                        cancel = null;
+                        SendUpdate("noone", -1);
+
+                        League league = League.findById(league_id);
+                        league.state = League.State.DURATION;
+                        league.insert();
+                    }
                 }
                 lastTick = time;
             } else
-            Logger.info(string);
+                Logger.info(string);
         }
     }
-
 
 
     private void DoPick(String player_id) {
@@ -129,6 +134,13 @@ public class DraftManagerActor extends UntypedActor {
     private void SendUserListUpdate() {
         UserListUpdate update = new UserListUpdate(users, usernames, userActors);
         for(ActorRef ref : userActors.values()) {
+            ref.tell(update, self());
+        }
+    }
+
+    private void SendUpdate(String currentUser, float timer) {
+        TurnUpdate update = new TurnUpdate(currentUser, Math.round(timer));
+        for (ActorRef ref : userActors.values()) {
             ref.tell(update, self());
         }
     }
