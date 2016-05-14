@@ -78,6 +78,7 @@ public class LeagueController extends Controller {
         ParameterParser params = new ParameterParser(json, args);
         if (!params.success) return badRequest(params.reason);
 
+
         League league = League.findById(params.get("league_id"));
         if(league == null) return notFound("League not found");
 
@@ -104,6 +105,7 @@ public class LeagueController extends Controller {
 
         team.setGoalkeeper(params.get("goalkeeper"));
 
+        league.insert();
 
         return ok();
     }
