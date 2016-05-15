@@ -16,16 +16,16 @@ import java.util.ArrayList;
 
 public class TeamController extends Controller {
 
-    public Result getTeam(String league_id)
+    public Result getTeam(String id)
     {
         if (!request().hasHeader("Authorization")) return unauthorized("Missing authorization header");
-        if (league_id.equals("")) return badRequest("Missing league_id");
+        if (id.equals("")) return badRequest("Missing league_id");
 
         User user = User.findByToken(request().getHeader("Authorization"));
         if (user == null) return unauthorized("Invalid authorization token: user not found!");
-        if (!user.leagues.containsKey(league_id)) return unauthorized("You are not in this league");
+        if (!user.leagues.containsKey(id)) return unauthorized("You are not in this league");
 
-        League league = League.findById(league_id);
+        League league = League.findById(id);
         if(league == null ) return notFound("League not found");
         if(league.state!= League.State.DURATION) return badRequest("League hasn't drafted yet");
 

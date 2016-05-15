@@ -30,12 +30,15 @@ POST         /api/draft/start        controllers.draft.DraftController.startDraf
 GET         /api/leagues            controllers.LeagueController.getLeagues()
 GET         /api/league             controllers.LeagueController.getLeague(id: String ?= "")
 
-GET         /api/team               controllers.TeamController.getTeam(league_id: String ?= "")
+GET         /api/team               controllers.TeamController.getTeam(id: String ?= "")
 PUT         /api/team               controllers.TeamController.updateTeam
 
 POST        /api/league             controllers.LeagueController.addLeague
 POST        /api/league/user        controllers.LeagueController.addUser
 DELETE      /api/league             controllers.LeagueController.deleteLeague(id: String ?= "")
+
+GET         /api/league/players     controllers.LeagueController.getPlayers(id: String ?= "")
+
 
 
 
