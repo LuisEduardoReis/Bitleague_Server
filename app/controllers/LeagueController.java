@@ -47,69 +47,6 @@ public class LeagueController extends Controller {
     }
 
 
-    public Result getTeam(String league_id)
-    {
-        if (!request().hasHeader("Authorization")) return unauthorized("Missing authorization header");
-
-        User user = User.findByToken(request().getHeader("Authorization"));
-        if (user == null) return unauthorized("Invalid authorization token: user not found!");
-
-        League league = League.findById(league_id);
-        if(league == null ) return notFound("league not found");
-
-        UserTeam ut = league.teams.get(user.id.toString());
-
-
-
-        return ok(Json.toJson(ut));
-    }
-
-
-    @BodyParser.Of(BodyParser.Json.class)
-    public Result updateTeam()
-    {
-        if (!request().hasHeader("Authorization")) return unauthorized("Missing authorization header");
-
-        User user = User.findByToken(request().getHeader("Authorization"));
-        if (user == null) return unauthorized("Invalid authorization token: user not found!");
-
-        JsonNode json = request().body().asJson();
-        String args[] = {"league_id","goalkeeper","defences","midfielders","strickers","benchers"};
-        ParameterParser params = new ParameterParser(json, args);
-        if (!params.success) return badRequest(params.reason);
-
-
-        League league = League.findById(params.get("league_id"));
-        if(league == null) return notFound("League not found");
-
-        UserTeam team = league.teams.get(user.id.toString());
-
-        ArrayList<String> benchers = new ArrayList<>();
-        for (JsonNode bencher : json.withArray("benchers")) {
-            benchers.add(bencher.textValue());
-        }
-        team.setBenchers(benchers);
-
-
-        ArrayList<String> midfielders = new ArrayList<>();
-        for (JsonNode midfielder : json.withArray("midfielders")) {
-            midfielders.add(midfielder.textValue());
-        }
-        team.setMidfielders(midfielders);
-
-        ArrayList<String> strickers = new ArrayList<>();
-        for (JsonNode stricker : json.withArray("strickers")) {
-            strickers.add(stricker.textValue());
-        }
-        team.setStrickers(strickers);
-
-        team.setGoalkeeper(params.get("goalkeeper"));
-
-        league.insert();
-
-        return ok();
-    }
-
 
     public Result getLeague(String id) {
         if (!request().hasHeader("Authorization")) return unauthorized("Missing authorization header");

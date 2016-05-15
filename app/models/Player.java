@@ -34,9 +34,7 @@ public class Player extends Model{
         players().remove(this.id);
     }
 
-    public static Player findById(String id) {
-        return players().findOne(new ObjectId(id)).as(Player.class);
-    }
+    public static Player findById(String id) {try {return players().findOne(new ObjectId(id)).as(Player.class);} catch(IllegalArgumentException exp) {return null;}}
     public static Player findByDataId(String id) {
         return players().findOne("{data_id: #}", id).as(Player.class);
     }

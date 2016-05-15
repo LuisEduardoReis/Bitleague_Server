@@ -83,7 +83,6 @@ public class DraftManagerActor extends UntypedActor {
             SendUserListUpdate();
         } else if (message instanceof MakePick) {
             MakePick pick = (MakePick) message;
-            Logger.info(pick.user_id + " " + currentUser);
             if (pick.user_id.equals(currentUser)) DoPick(pick.player_id);
         } else if (message instanceof String) {
             String string = (String) message;
@@ -103,6 +102,7 @@ public class DraftManagerActor extends UntypedActor {
                         cancel = null;
                         SendUpdate("noone", -1);
 
+                        currentUser = null;
                         League league = League.findById(league_id);
                         league.generateTeams(picks);
                         league.state = League.State.DURATION;

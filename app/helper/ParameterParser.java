@@ -1,6 +1,7 @@
 package helper;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import play.api.libs.json.Json;
 
 import java.util.HashMap;
 
@@ -10,18 +11,26 @@ public class ParameterParser {
     public String reason = "";
     public boolean success = false;
 
-    public ParameterParser(JsonNode json, String[] args) {
+    public ParameterParser(JsonNode json, String[] parameters) {
         success = false;
-        for(String arg : args) {
-            JsonNode node = json.findValue(arg);
-            if (node == null) {reason = "Missing value '" + arg + "'."; return;}
+        for(String param : parameters) {
+            JsonNode node = json.findValue(param);
+            if (node == null) {reason = "Missing value '" + param + "'."; return;}
             String value = node.textValue();
-            if (value == "") {reason = "Parameter '" + arg + "' can't be null."; return;}
+            if (value == "") {reason = "Parameter '" + param + "' can't be null."; return;}
 
-            hash.put(arg, value);
+            hash.put(param, value);
         }
         success = true;
     }
 
     public String get(String key) {return hash.get(key);}
+
+    public static String checkParameters(JsonNode json, String[] parameters) {
+        for(String param : parameters) {
+            JsonNode node = json.findValue(param);
+            if (node == null) {return"Missing value '" + param + "'.";}
+        }
+        return "ok";
+    }
 }

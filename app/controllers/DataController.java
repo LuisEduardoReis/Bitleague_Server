@@ -24,6 +24,8 @@ public class DataController {
     }
 
     public static void generatePlayers() {
+        String[] positionDescriptions = {"Goalkeeper", "Defender", "Midfielder", "Forward"};
+
         Season season = Season.seasons().findOne().as(Season.class);
         for(Season.League league : season.leagues) {
             for(Season.Team team : league.teams) {
@@ -33,7 +35,7 @@ public class DataController {
                     player.name = player_s.name;
                     player.number = player_s.number;
                     player.position = player_s.position;
-                    player.positionDescription = player_s.positionDescription;
+                    player.positionDescription = positionDescriptions[player_s.position-1];
                     player.team = team.name;
 
                     player.insert();

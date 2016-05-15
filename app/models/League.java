@@ -48,9 +48,7 @@ public class League extends Model {
         leagues().remove(this.id);
     }
 
-    public static League findById(String id) {
-        return leagues().findOne(new ObjectId(id)).as(League.class);
-    }
+    public static League findById(String id) {try {return leagues().findOne(new ObjectId(id)).as(League.class);} catch(IllegalArgumentException exp) {return null;}}
     public static League findByName(String name) {
         return leagues().findOne("{name: #}", name).as(League.class);
     }
@@ -61,18 +59,11 @@ public class League extends Model {
     }
 
     public void generateTeams(List<DraftManagerActor.Pick> picks) {
-        for(DraftManagerActor.Pick pick : picks)
-        {
-            if(teams.containsKey(pick.user_id))
-            {
-                teams.get(pick.user_id).addPlayer(pick.player_id);
+        for(DraftManagerActor.Pick pick : picks) {
+            if(!teams.containsKey(pick.user_id)) {
+                teams.put(pick.user_id, new UserTeam());
             }
-            else {
-                UserTeam team = new UserTeam();
-                team.addPlayer(pick.player_id);
-                teams.put(pick.user_id, team);
-
-            }
+            teams.get(pick.user_id).players.put(pick.player_id,true);
         }
     }
 }

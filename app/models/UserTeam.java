@@ -1,115 +1,51 @@
 package models;
 
+import play.Logger;
+
 import java.lang.reflect.Array;
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
 
 public class UserTeam {
 
-    ArrayList<String> players;
-    boolean hasTeam;
-    ArrayList<String> benchers;
-    ArrayList<String> defences;
-    ArrayList<String> midfielders;
-    ArrayList<String> strickers;
-    String goalkeeper;
-
-
+    public Map<String,Boolean> players;
+    public boolean hasTeam;
+    public Map<String,Boolean> lineup;
+    public Map<String,Boolean> bench;
 
     public UserTeam() {
         hasTeam = false;
 
-        players = new ArrayList<>();
-    //    lineup = new ArrayList<>();
-        benchers = new ArrayList<>();
-        defences = new ArrayList<>();
-        midfielders = new ArrayList<>();
-        strickers = new ArrayList<>();
-
+        players = new HashMap<>();
+        lineup = new HashMap<>();
+        bench = new HashMap<>();
     }
 
     public String checkValidity() {
-        if (strickers.size() + defences.size() + midfielders.size() +1 != 11 ) return "Lineup must have 11 players!";
+        int[] pos = new int[4];
+        if (lineup.size() != 11 ) return "Lineup must have 11 players!";
+        for(String player_id : lineup.keySet()) {
+            if (!players.containsKey(player_id)) return "Illegal player in team!";
+            Player player = Player.findByDataId(player_id);
+            Logger.info(player_id + " " + player.positionDescription);
+            pos[player.position-1]++;
+        }
+        if (bench.size() > 7 ) return "Bench can only have up to 7 players";
+        for(String player_id : bench.keySet()) {
+            if (!players.containsKey(player_id)) return "Illegal player in team!";
+        }
 
-
-        if (!goalkeeper.equals("")) return "Lineup must have exactly 1 goalkeeper";
-        if (defences.size() < 3) return "Lineup can't have less than 3 defences";
-        if (defences.size() > 5) return "Lineup can't have more than 5 defences";
-        if (midfielders.size() < 2) return "Lineup can't have less than 2 midfielders";
-        if (midfielders.size()> 5) return "Lineup can't have more than 5 midfielders";
-        if (strickers.size() < 1) return "Lineup must have at least 1 striker";
-        if (strickers.size() > 4) return "Lineup can't have more than 4 strikers";
+        if (pos[0] !=1) return "Lineup must have exactly 1 goalkeeper";
+        if (pos[1] < 3) return "Lineup can't have less than 3 defences";
+        if (pos[1] > 5) return "Lineup can't have more than 5 defences";
+        if (pos[2] < 2) return "Lineup can't have less than 2 midfielders";
+        if (pos[2] > 5) return "Lineup can't have more than 5 midfielders";
+        if (pos[3] < 1) return "Lineup must have at least 1 striker";
+        if (pos[3] > 4) return "Lineup can't have more than 4 strikers";
 
         return "ok";
     }
 
 
-    public void removePlayer(String player_id) {
-        players.remove(player_id);
-        if(benchers.contains(player_id))
-            benchers.remove(player_id);
-
-        if(defences.contains(player_id))
-            defences.remove(player_id);
-
-        if(midfielders.contains(player_id))
-            midfielders.remove(player_id);
-
-        if(strickers.contains(player_id))
-            strickers.remove(player_id);
-
-        if(goalkeeper.equals(player_id))
-            goalkeeper ="";
-    }
-
-    public void addPlayer(String player_id) {
-        players.add(player_id);
-    }
-
-    public ArrayList<String> getPlayers() {
-        return players;
-    }
-
-    public void setPlayers(ArrayList<String> players) {
-        this.players = players;
-    }
-
-    public ArrayList<String> getBenchers() {
-        return benchers;
-    }
-
-    public void setBenchers(ArrayList<String> benchers) {
-        this.benchers = benchers;
-    }
-
-    public ArrayList<String> getDefences() {
-        return defences;
-    }
-
-    public void setDefences(ArrayList<String> defences) {
-        this.defences = defences;
-    }
-
-    public ArrayList<String> getMidfielders() {
-        return midfielders;
-    }
-
-    public void setMidfielders(ArrayList<String> midfielders) {
-        this.midfielders = midfielders;
-    }
-
-    public ArrayList<String> getStrickers() {
-        return strickers;
-    }
-
-    public void setStrickers(ArrayList<String> strickers) {
-        this.strickers = strickers;
-    }
-
-    public String getGoalkeeper() {
-        return goalkeeper;
-    }
-
-    public void setGoalkeeper(String goalkeeper) {
-        this.goalkeeper = goalkeeper;
-    }
 }
