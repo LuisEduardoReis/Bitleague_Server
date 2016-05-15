@@ -105,7 +105,7 @@ public class DraftManagerActor extends UntypedActor {
                         currentUser = null;
                         League league = League.findById(league_id);
                         league.generateTeams(picks);
-                        league.state = League.State.DURATION;
+                        league.startDuration();
                         league.insert();
                     }
                 }

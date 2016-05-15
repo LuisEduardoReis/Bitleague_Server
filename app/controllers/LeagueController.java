@@ -64,6 +64,7 @@ public class LeagueController extends Controller {
             league_json.put("name", league.name);
             league_json.put("creator", league.creator);
             league_json.put("state", league.state.toString());
+            league_json.put("matches", Json.toJson(league.matches));
             ArrayNode users = Json.newArray();
             for(String user_id : league.users.keySet()) {
                 ObjectNode user_node = Json.newObject();

@@ -11,7 +11,7 @@ GET         /chat                   controllers.ApplicationController.chat
 GET         /api/users              controllers.UserController.getUsers(page: Int ?= 0, page_size : Int ?= 10)
 GET         /api/user               controllers.UserController.getUser(id: String ?= "")
 
-#POST        /api/user               controllers.UserController.addUser
+POST        /api/user               controllers.UserController.addUser
 DELETE      /api/user               controllers.UserController.deleteUser(id: String ?= "")
 
 # Auth
