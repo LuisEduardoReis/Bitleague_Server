@@ -1,6 +1,7 @@
 package models;
 
 import com.fasterxml.jackson.annotation.JsonProperty;
+import controllers.draft.DraftManagerActor;
 import org.bson.types.ObjectId;
 import org.jongo.MongoCollection;
 import org.jongo.marshall.jackson.oid.MongoId;
@@ -31,13 +32,14 @@ public class League extends Model {
     public String creator;
     public Map<String, Boolean> users;
 
-    public Map<String, ArrayList<String>> teams;
+    public Map<String, UserTeam> teams;
 
     public State state;
 
     public League() {
         state = State.INVITE;
         users = new HashMap<>();
+        teams = new HashMap<>();
     }
 
     public League insert() { leagues().save(this); return this; }
@@ -46,9 +48,7 @@ public class League extends Model {
         leagues().remove(this.id);
     }
 
-    public static League findById(String id) {
-        return leagues().findOne(new ObjectId(id)).as(League.class);
-    }
+    public static League findById(String id) {try {return leagues().findOne(new ObjectId(id)).as(League.class);} catch(IllegalArgumentException exp) {return null;}}
     public static League findByName(String name) {
         return leagues().findOne("{name: #}", name).as(League.class);
     }
@@ -56,5 +56,14 @@ public class League extends Model {
     public boolean readyForDraft() {
         return true;
         //return users.size() == NUM_USERS;
+    }
+
+    public void generateTeams(List<DraftManagerActor.Pick> picks) {
+        for(DraftManagerActor.Pick pick : picks) {
+            if(!teams.containsKey(pick.user_id)) {
+                teams.put(pick.user_id, new UserTeam());
+            }
+            teams.get(pick.user_id).players.put(pick.player_id,true);
+        }
     }
 }

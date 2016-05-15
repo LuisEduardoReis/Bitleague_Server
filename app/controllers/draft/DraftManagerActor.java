@@ -6,6 +6,7 @@ import akka.actor.Props;
 import akka.actor.UntypedActor;
 import controllers.DataController;
 import models.League;
+import models.Player;
 import models.Season;
 import models.User;
 import play.Logger;
@@ -27,14 +28,12 @@ public class DraftManagerActor extends UntypedActor {
     public HashMap<String, String> usernames;
     public HashMap<String, ActorRef> userActors;
 
-    public HashMap<String, ArrayList<String>> teams;
-
     public float timer;
     public long lastTick;
     public int turn;
     public String currentUser;
     public List<Pick> picks;
-    public HashMap<String, Season.Player> playersLeft;
+    public HashMap<String, Player> playersLeft;
 
     public DraftManagerActor() {
         this.started = false;
@@ -44,7 +43,6 @@ public class DraftManagerActor extends UntypedActor {
         this.users = new ArrayList<>();
         this.usernames = new HashMap<>();
         this.userActors = new HashMap<>();
-        this.teams = new HashMap<>();
 
         this.timer = TURN_TIME;
         this.lastTick = -1;
@@ -85,7 +83,6 @@ public class DraftManagerActor extends UntypedActor {
             SendUserListUpdate();
         } else if (message instanceof MakePick) {
             MakePick pick = (MakePick) message;
-            Logger.info(pick.user_id + " " + currentUser);
             if (pick.user_id.equals(currentUser)) DoPick(pick.player_id);
         } else if (message instanceof String) {
             String string = (String) message;
@@ -105,8 +102,9 @@ public class DraftManagerActor extends UntypedActor {
                         cancel = null;
                         SendUpdate("noone", -1);
 
+                        currentUser = null;
                         League league = League.findById(league_id);
-                        league.teams = this.teams;
+                        league.generateTeams(picks);
                         league.state = League.State.DURATION;
                         league.insert();
                     }
@@ -120,26 +118,13 @@ public class DraftManagerActor extends UntypedActor {
 
     private void DoPick(String player_id) {
         if (player_id == null || !playersLeft.containsKey(player_id)) {
-            player_id = ""+playersLeft.get(playersLeft.keySet().iterator().next())._id;
+            player_id = ""+playersLeft.get(playersLeft.keySet().iterator().next()).data_id;
         }
 
         playersLeft.remove(player_id);
         picks.add(new Pick(currentUser, player_id));
         for(ActorRef ref : userActors.values()) {
             ref.tell(new MakePick(currentUser, player_id), self());
-        }
-
-        ArrayList<String> team = new ArrayList<>();
-        if(teams.containsKey(currentUser))
-        {
-            team = teams.get(currentUser);
-            team.add(player_id);
-            teams.put(currentUser,team);
-        }
-        else
-        {
-            team.add(player_id);
-            teams.put(currentUser, team);
         }
 
         turn++;

@@ -6,7 +6,6 @@ import com.google.inject.Inject;
 import helper.ParameterParser;
 import models.League;
 import models.User;
-import play.Logger;
 import play.mvc.*;
 import scala.concurrent.duration.Duration;
 
@@ -55,7 +54,6 @@ public class DraftController extends Controller {
 
         if (!league.readyForDraft()) return badRequest("This league's draft is not ready to start");
 
-        Logger.info("Draft "+league_id+" started");
         league.state = League.State.DRAFTING;
         league.insert();
 
