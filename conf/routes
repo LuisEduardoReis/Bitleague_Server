@@ -17,13 +17,17 @@ DELETE      /api/user               controllers.UserController.deleteUser(id: St
 # Auth
 POST     /api/login                 controllers.AuthenticationController.login
 
-# Players
+# Data
 GET         /api/players            controllers.DataController.getPlayers
-#GET         /api/gen_players        controllers.DataController.genPlayers
+#GET         /api/gen_players       controllers.DataController.genPlayers
+GET         /api/teams              controllers.DataController.getTeams
+#GET        /api/gen_teams          controllers.DataController.genTeams
+GET         /api/match_events       controllers.DataController.getMatchEvents
+GET         /api/matchdays          controllers.DataController.getMatchDays
 
 #Draft
 GET         /api/socket             controllers.draft.DraftController.socket
-POST         /api/draft/start        controllers.draft.DraftController.startDraft
+POST         /api/draft/start       controllers.draft.DraftController.startDraft
 
 
 # Leagues
@@ -39,11 +43,13 @@ DELETE      /api/league             controllers.LeagueController.deleteLeague(id
 
 GET         /api/league/players     controllers.LeagueController.getPlayers(id: String ?= "")
 
-
-
+# Admin
+GET         /api/admin/lockstate    controllers.MatchdayController.getLockState
+POST        /api/admin/lock         controllers.MatchdayController.postLock
+POST        /api/admin/unlock       controllers.MatchdayController.postUnlock
 
 # Map static resources from the /public folder to the /assets URL path
 GET        /assets/*file         controllers.Assets.at(path="/public", file)
 #GET        /webjars/*file        controllers.WebJarAssets.at(file)
 
-#->          /                   signalJ.Routes
+
