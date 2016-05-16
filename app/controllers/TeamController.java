@@ -55,6 +55,7 @@ public class TeamController extends Controller {
         League league = League.findById(json.findValue("league_id").textValue());
         if(league == null) return notFound("League not found");
         if(league.state!= League.State.DURATION) return badRequest("League hasn't drafted yet");
+        if(!league.users.containsKey(user.id.toString())) return unauthorized("You are not in this league!");
 
         UserTeam team = league.teams.get(user.id.toString());
 
@@ -62,7 +63,9 @@ public class TeamController extends Controller {
         Iterator<Map.Entry<String,JsonNode>> i = json.get("lineup").fields();
         while(i.hasNext()) {
             Map.Entry<String,JsonNode> e = i.next();
-            team.lineup.put(e.getKey(),e.getValue().intValue());
+            int position = e.getValue().intValue();
+            if (position < 1 || position > 4) return badRequest("Invalid player position");
+            team.lineup.put(e.getKey(),position);
         }
 
         team.bench.clear();
