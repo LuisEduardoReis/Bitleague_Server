@@ -11,7 +11,7 @@ public class UserTeam {
 
     public Map<String,Boolean> players;
     public boolean hasTeam;
-    public Map<String,Boolean> lineup;
+    public Map<String,Integer> lineup;
     public Map<String,Boolean> bench;
 
     public UserTeam() {
@@ -25,11 +25,9 @@ public class UserTeam {
     public String checkValidity() {
         int[] pos = new int[4];
         if (lineup.size() != 11 ) return "Lineup must have 11 players!";
-        for(String player_id : lineup.keySet()) {
-            if (!players.containsKey(player_id)) return "Illegal player in team!";
-            Player player = Player.findByDataId(player_id);
-            Logger.info(player_id + " " + player.positionDescription);
-            pos[player.position-1]++;
+        for(HashMap.Entry<String,Integer> player : lineup.entrySet()) {
+            if (!players.containsKey(player.getKey())) return "Illegal player in team!";
+            pos[player.getValue()-1]++;
         }
         if (bench.size() > 7 ) return "Bench can only have up to 7 players";
         for(String player_id : bench.keySet()) {

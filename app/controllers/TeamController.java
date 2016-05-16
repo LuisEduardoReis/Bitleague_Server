@@ -1,6 +1,7 @@
 package controllers;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ArrayNode;
 import helper.ParameterParser;
 import models.League;
@@ -13,6 +14,9 @@ import play.mvc.Controller;
 import play.mvc.Result;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.Map;
 
 public class TeamController extends Controller {
 
@@ -55,8 +59,10 @@ public class TeamController extends Controller {
         UserTeam team = league.teams.get(user.id.toString());
 
         team.lineup.clear();
-        for(JsonNode player : json.withArray("lineup")) {
-            team.lineup.put(player.textValue(),true);
+        Iterator<Map.Entry<String,JsonNode>> i = json.get("lineup").fields();
+        while(i.hasNext()) {
+            Map.Entry<String,JsonNode> e = i.next();
+            team.lineup.put(e.getKey(),e.getValue().intValue());
         }
 
         team.bench.clear();
