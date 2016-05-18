@@ -129,7 +129,7 @@ public class DraftManagerActor extends UntypedActor {
         if(!shortLists.containsKey(pick.user_id))
         {
             shortList.add(pick.player_id);
-            shortLists.put(pick.player_id, shortList);
+            shortLists.put(pick.user_id, shortList);
         }
         else
         {
@@ -152,10 +152,24 @@ public class DraftManagerActor extends UntypedActor {
     }
     private void DoPick(String player_id) {
         if (player_id == null || !playersLeft.containsKey(player_id)) {
-            player_id = ""+playersLeft.get(playersLeft.keySet().iterator().next()).data_id;
+
+            if(shortLists.containsKey(currentUser)) {
+                if (shortLists.get(currentUser).size() < 1)
+                    player_id = "" + playersLeft.get(playersLeft.keySet().iterator().next()).data_id;
+                else
+                    player_id = shortLists.get(currentUser).remove(0);
+            }else
+                player_id = "" + playersLeft.get(playersLeft.keySet().iterator().next()).data_id;
+
         }
 
         playersLeft.remove(player_id);
+
+        for (Map.Entry<String, ArrayList<String>> entry : shortLists.entrySet())
+        {
+           entry.getValue().remove(player_id);
+        }
+
         picks.add(new Pick(currentUser, player_id));
         for(ActorRef ref : userActors.values()) {
             ref.tell(new MakePick(currentUser, player_id), self());
