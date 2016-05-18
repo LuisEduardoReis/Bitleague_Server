@@ -27,7 +27,7 @@ POST         /api/draft/start        controllers.draft.DraftController.startDraf
 
 
 # Leagues
-GET         /api/leagues            controllers.LeagueController.getLeagues()
+GET         /api/leagues            controllers.LeagueController.getLeagues
 GET         /api/league             controllers.LeagueController.getLeague(id: String ?= "")
 
 GET         /api/team               controllers.TeamController.getTeam(id: String ?= "")
