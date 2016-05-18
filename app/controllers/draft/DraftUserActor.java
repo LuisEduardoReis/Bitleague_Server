@@ -13,6 +13,9 @@ import models.User;
 import play.Logger;
 import play.libs.Json;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+
 public class DraftUserActor extends UntypedActor {
 
     public static Props props(ActorRef out) { return Props.create(DraftUserActor.class, out); }
@@ -63,6 +66,10 @@ public class DraftUserActor extends UntypedActor {
                     if (!json.has("data") || !json.get("data").has("player_id")) return;
 
                     draftManager.tell(new DraftManagerActor.MakePick(user_id, json.get("data").get("player_id").asText()), self());
+                } else if (event.equals("favourite")){
+                    if (!json.has("data") || !json.get("data").has("player_id")) return;
+
+                    draftManager.tell(new DraftManagerActor.FavouritePick(user_id, json.get("data").get("player_id").asText()), self());
                 }
             } catch(Exception e) {
                 Logger.error(e.toString());
@@ -85,6 +92,12 @@ public class DraftUserActor extends UntypedActor {
             ObjectNode res = Json.newObject();
                 res.put("event","pick_list");
                 res.put("data",Json.toJson(picks.picks));
+            out.tell(res.toString(), self());
+        } else if (message instanceof DraftManagerActor.FavouritePick) {
+            DraftManagerActor.FavouritePick pick = (DraftManagerActor.FavouritePick) message;
+            ObjectNode res = Json.newObject();
+            res.put("event","favourite");
+            res.put("data",Json.toJson(pick));
             out.tell(res.toString(), self());
         } else if (message instanceof  DraftManagerActor.MakePick) {
             DraftManagerActor.MakePick pick = (DraftManagerActor.MakePick) message;

@@ -33,7 +33,7 @@ public class DraftManagerActor extends UntypedActor {
     public int turn;
     public String currentUser;
     public List<Pick> picks;
-    public HashMap<String, ArrayList<MakePick>> shortLists;
+    public HashMap<String, ArrayList<String>> shortLists;
     public HashMap<String, Player> playersLeft;
 
     public DraftManagerActor() {
@@ -83,23 +83,11 @@ public class DraftManagerActor extends UntypedActor {
                     userActors.remove(e.getKey());
             }
             SendUserListUpdate();
+        }else if (message instanceof FavouritePick) {
+            FavouritePick pick = (FavouritePick) message;
+            AddToShortList(pick);
         } else if (message instanceof MakePick) {
             MakePick pick = (MakePick) message;
-/*<<<<<<< HEAD
-            Logger.info(pick.user_id+ " " + currentUser);
-            if (pick.user_id.equals(currentUser))
-            {
-                DoPick(pick.player_id);
-            }
-            else
-            {
-                AddToShortList(pick);
-            }
-
-
-        } else
-        if (message instanceof String) {
-=======*/
             if (pick.user_id.equals(currentUser)) DoPick(pick.player_id);
         } else if (message instanceof String) {
             String string = (String) message;
@@ -133,30 +121,31 @@ public class DraftManagerActor extends UntypedActor {
     }
 
 
-    private void AddToShortList(MakePick pick) {
+    private void AddToShortList(FavouritePick pick) {
         if (pick.player_id == null) {
            return;
         }
-        ArrayList<MakePick> shortList = new ArrayList<>();
-        if(!shortLists.containsKey(pick.player_id))
+        ArrayList<String> shortList = new ArrayList<>();
+        if(!shortLists.containsKey(pick.user_id))
         {
-            shortList.add(pick);
+            shortList.add(pick.player_id);
             shortLists.put(pick.player_id, shortList);
         }
         else
         {
-            shortList = shortLists.get(pick.player_id);
+            shortList = shortLists.get(pick.user_id);
             if(shortList.contains(pick)) {
                 return;
             }
             else {
-                shortList.add(pick);
+                shortList.add(pick.player_id);
                 shortLists.put(pick.player_id, shortList);
             }
         }
 
 
-        ActorRef self = userActors.get(pick.player_id);
+        ActorRef user = userActors.get(pick.user_id);
+        user.tell(pick, self());
 
 
 
@@ -247,6 +236,12 @@ public class DraftManagerActor extends UntypedActor {
         public MakePick(String user_id, String player_id) {
             this.user_id = user_id;
             this.player_id = player_id;
+        }
+    }
+
+    public static class FavouritePick extends MakePick {
+        public FavouritePick(String user_id, String player_id) {
+           super(user_id,player_id);
         }
     }
 
