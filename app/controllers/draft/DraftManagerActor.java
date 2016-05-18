@@ -83,7 +83,10 @@ public class DraftManagerActor extends UntypedActor {
                     userActors.remove(e.getKey());
             }
             SendUserListUpdate();
-        }else if (message instanceof FavouritePick) {
+        }else if (message instanceof RemoveFavourite) {
+            RemoveFavourite pick = (RemoveFavourite) message;
+            RemoveFromShortList(pick);
+        } else if (message instanceof FavouritePick) {
             FavouritePick pick = (FavouritePick) message;
             AddToShortList(pick);
         } else if (message instanceof MakePick) {
@@ -121,6 +124,23 @@ public class DraftManagerActor extends UntypedActor {
     }
 
 
+    private void RemoveFromShortList(RemoveFavourite pick) {
+        if (pick.player_id == null) {
+            return;
+        }
+        if(!shortLists.containsKey(pick.user_id))
+        {
+            shortLists.get(pick.user_id).remove(pick.player_id);
+        }
+
+
+        ActorRef user = userActors.get(pick.user_id);
+        user.tell(pick, self());
+
+
+
+    }
+
     private void AddToShortList(FavouritePick pick) {
         if (pick.player_id == null) {
            return;
@@ -134,7 +154,7 @@ public class DraftManagerActor extends UntypedActor {
         else
         {
             shortList = shortLists.get(pick.user_id);
-            if(shortList.contains(pick)) {
+            if(shortList.contains(pick.player_id)) {
                 return;
             }
             else {
@@ -256,6 +276,12 @@ public class DraftManagerActor extends UntypedActor {
     public static class FavouritePick extends MakePick {
         public FavouritePick(String user_id, String player_id) {
            super(user_id,player_id);
+        }
+    }
+
+    public static class RemoveFavourite extends MakePick {
+        public RemoveFavourite(String user_id, String player_id) {
+            super(user_id,player_id);
         }
     }
 
