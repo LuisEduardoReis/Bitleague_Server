@@ -6,7 +6,6 @@ import com.google.inject.Inject;
 import helper.ParameterParser;
 import models.League;
 import models.User;
-import play.Logger;
 import play.mvc.*;
 import scala.concurrent.duration.Duration;
 
@@ -26,9 +25,6 @@ public class DraftController extends Controller {
 
     public static ActorRef getDraftManager(String league_id) {
         if (!draftManagers.containsKey(league_id)) {
-            League league = League.findById(league_id);
-            if (league == null || !league.readyForDraft()) return null;
-
             ActorRef draftManager = system.actorOf(DraftManagerActor.props);
             draftManager.tell(new DraftManagerActor.Init(league_id),null);
             draftManagers.put(league_id, draftManager);
@@ -54,10 +50,13 @@ public class DraftController extends Controller {
         if (user_t == null) return unauthorized("Invalid authorization token: user not found!");
 
         if (!league.creator.equals(user_t.id.toString())) return unauthorized("You are not this league's creator!");
+        if (league.state != League.State.INVITE && league.state != League.State.DRAFTING) return badRequest("League already drafted!");
 
         if (!league.readyForDraft()) return badRequest("This league's draft is not ready to start");
 
-        Logger.info("Draft "+league_id+" started");
+        league.state = League.State.DRAFTING;
+        league.insert();
+
         ActorRef draftManager = getDraftManager(league_id);
 
         Cancellable cancel = system.scheduler().schedule(

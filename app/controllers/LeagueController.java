@@ -6,10 +6,13 @@ import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import helper.ParameterParser;
 import models.League;
+import models.Player;
 import models.User;
+import models.UserTeam;
 import org.bson.types.ObjectId;
 import org.jongo.MongoCursor;
 import play.Logger;
+import play.api.libs.json.DefaultReads;
 import play.api.libs.json.JsArray;
 import play.libs.Json;
 import play.mvc.BodyParser;
@@ -19,9 +22,7 @@ import play.mvc.Result;
 import views.html.index;
 import views.html.chat;
 
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
+import java.util.*;
 
 public class LeagueController extends Controller {
 
@@ -45,6 +46,8 @@ public class LeagueController extends Controller {
         return ok(leagues);
     }
 
+
+
     public Result getLeague(String id) {
         if (!request().hasHeader("Authorization")) return unauthorized("Missing authorization header");
 
@@ -59,6 +62,8 @@ public class LeagueController extends Controller {
         ObjectNode league_json = Json.newObject();
             league_json.put("id", id);
             league_json.put("name", league.name);
+            league_json.put("creator", league.creator);
+            league_json.put("state", league.state.toString());
             ArrayNode users = Json.newArray();
             for(String user_id : league.users.keySet()) {
                 ObjectNode user_node = Json.newObject();
@@ -83,6 +88,8 @@ public class LeagueController extends Controller {
 
         League league = League.findById(params.get("id"));
         if(league == null) return notFound("League not found");
+
+        if (league.state != League.State.INVITE) return badRequest("League has already started");
 
         User user = User.findByToken(request().getHeader("Authorization"));
         if (user == null) return unauthorized("Invalid authorization token: user not found!");
@@ -133,15 +140,56 @@ public class LeagueController extends Controller {
         if (user_t == null) return unauthorized("Invalid authorization token: user not found!");
 
         League league = League.findById(id);
-        if(league != null) return  notFound("League not found");
+        if(league == null) return  notFound("League not found");
 
         if(!(user_t.isAdmin|| league.creator.equals(user_t.id.toString()))) return unauthorized();
 
-        if (league != null) {
-            league.remove();
-            return ok();
-        } else
-            return notFound("League not found");
+        for(String user_id : league.users.keySet()) {
+            User user = User.findById(user_id);
+            user.leagues.remove(id);
+            user.insert();
+        }
+        league.remove();
+        return ok();
+    }
+
+    public Result getPlayers(String id) {
+        if (!request().hasHeader("Authorization")) return unauthorized("Missing authorization header");
+
+        User user_t = User.findByToken(request().getHeader("Authorization"));
+        if (user_t == null) return unauthorized("Invalid authorization token: user not found!");
+
+        League league = League.findById(id);
+        if(league == null) return  notFound("League not found");
+
+        if(!(user_t.isAdmin|| league.creator.equals(user_t.id.toString()))) return unauthorized();
+
+        HashMap<String, String> team_ownership = new HashMap<>();
+        for(Map.Entry<String,UserTeam> pair : league.teams.entrySet())
+            for(String player : pair.getValue().players.keySet())
+                team_ownership.put(player, pair.getKey());
+
+        ArrayNode list = Json.newArray();
+        for(Player player : Player.players().find().as(Player.class)) {
+            ObjectNode node = Json.newObject();
+                node.put("id", player.data_id);
+                node.put("name", player.name);
+                node.put("position", player.position);
+                node.put("positionDescription", player.positionDescription);
+                if (team_ownership.containsKey(player.data_id)) {
+                    String owner = team_ownership.get(player.data_id);
+                    User user = User.findById(owner);
+                    node.put("owner", owner);
+                    node.put("ownerName", user.name);
+                } else {
+                    node.put("owner","");
+                    node.put("ownerName", "Free");
+                }
+            list.add(node);
+        }
+
+
+        return ok(list);
     }
 
 }
