@@ -5,13 +5,14 @@ import controllers.draft.DraftManagerActor;
 import org.bson.types.ObjectId;
 import org.jongo.MongoCollection;
 import org.jongo.marshall.jackson.oid.MongoId;
+import play.Logger;
 import play.Play;
+import play.api.libs.*;
+import play.api.libs.iteratee.Enumeratee;
 import uk.co.panaxiom.playjongo.PlayJongo;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
+import java.util.Collections;
 
 public class League extends Model {
 
@@ -31,8 +32,10 @@ public class League extends Model {
 
     public String creator;
     public Map<String, Boolean> users;
-
     public Map<String, UserTeam> teams;
+
+    int matchday_counter;
+    public ArrayList<ArrayList<Match>> matches;
 
     public State state;
 
@@ -40,6 +43,10 @@ public class League extends Model {
         state = State.INVITE;
         users = new HashMap<>();
         teams = new HashMap<>();
+
+
+        matchday_counter = 0;
+        matches = new ArrayList<>();
     }
 
     public League insert() { leagues().save(this); return this; }
@@ -54,7 +61,7 @@ public class League extends Model {
     }
 
     public boolean readyForDraft() {
-        return true;
+        return (users.size() % 2) == 0;
         //return users.size() == NUM_USERS;
     }
 
@@ -64,6 +71,52 @@ public class League extends Model {
                 teams.put(pick.user_id, new UserTeam());
             }
             teams.get(pick.user_id).players.put(pick.player_id,true);
+        }
+    }
+
+    public void startDuration() {
+        state = League.State.DURATION;
+        matchday_counter = 0;
+
+        // Round robin tournament
+        ArrayList<String> ul = new ArrayList<>();
+        for(String user : users.keySet()) ul.add(user);
+        Collections.shuffle(ul);
+
+        int numMatchDays = ul.size()-1;
+        int numPairs = ul.size()/2;
+
+        matches.clear();
+        for(int i = 0; i < 2*numMatchDays; i++) {
+            ArrayList<Match> matchday = new ArrayList<>();
+            if (i < numMatchDays)
+                matchday.add(new Match(ul.get(0),ul.get(i % numMatchDays +1)));
+            else
+                matchday.add(new Match(ul.get(i % numMatchDays +1),ul.get(0)));
+
+            for(int j = 1; j < numPairs; j++) {
+                int first = (i + j) % numMatchDays + 1;
+                int second = (i + numMatchDays - j) % numMatchDays + 1;
+
+                if (i < numMatchDays)
+                    matchday.add(new Match(ul.get(first),ul.get(second)));
+                else
+                    matchday.add(new Match(ul.get(second),ul.get(first)));
+            }
+            matches.add(matchday);
+        }
+        Collections.shuffle(matches);
+    }
+
+    public static class Match {
+        public String homePlayer;
+        public String awayPlayer;
+
+        public Match() {}
+
+        public Match(String h, String a) {
+            homePlayer = h;
+            awayPlayer = a;
         }
     }
 }
