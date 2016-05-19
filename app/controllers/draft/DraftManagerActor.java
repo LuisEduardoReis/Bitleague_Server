@@ -33,6 +33,7 @@ public class DraftManagerActor extends UntypedActor {
     public int turn;
     public String currentUser;
     public List<Pick> picks;
+    public HashMap<String, ArrayList<String>> shortLists;
     public HashMap<String, Player> playersLeft;
 
     public DraftManagerActor() {
@@ -50,6 +51,7 @@ public class DraftManagerActor extends UntypedActor {
         this.currentUser = "";
         this.picks = new ArrayList<>();
         this.playersLeft = DataController.getPlayersHash();
+        this.shortLists = new HashMap<>();
     }
 
     @Override
@@ -81,6 +83,12 @@ public class DraftManagerActor extends UntypedActor {
                     userActors.remove(e.getKey());
             }
             SendUserListUpdate();
+        }else if (message instanceof RemoveFavourite) {
+            RemoveFavourite pick = (RemoveFavourite) message;
+            RemoveFromShortList(pick);
+        } else if (message instanceof FavouritePick) {
+            FavouritePick pick = (FavouritePick) message;
+            AddToShortList(pick);
         } else if (message instanceof MakePick) {
             MakePick pick = (MakePick) message;
             if (pick.user_id.equals(currentUser)) DoPick(pick.player_id);
@@ -116,12 +124,72 @@ public class DraftManagerActor extends UntypedActor {
     }
 
 
+    private void RemoveFromShortList(RemoveFavourite pick) {
+        if (pick.player_id == null) {
+            return;
+        }
+        if(!shortLists.containsKey(pick.user_id))
+        {
+            shortLists.get(pick.user_id).remove(pick.player_id);
+        }
+
+
+        ActorRef user = userActors.get(pick.user_id);
+        user.tell(pick, self());
+
+
+
+    }
+
+    private void AddToShortList(FavouritePick pick) {
+        if (pick.player_id == null) {
+           return;
+        }
+        ArrayList<String> shortList = new ArrayList<>();
+        if(!shortLists.containsKey(pick.user_id))
+        {
+            shortList.add(pick.player_id);
+            shortLists.put(pick.user_id, shortList);
+        }
+        else
+        {
+            shortList = shortLists.get(pick.user_id);
+            if(shortList.contains(pick.player_id)) {
+                return;
+            }
+            else {
+                shortList.add(pick.player_id);
+                shortLists.put(pick.player_id, shortList);
+            }
+        }
+
+
+        ActorRef user = userActors.get(pick.user_id);
+        user.tell(pick, self());
+
+
+
+    }
     private void DoPick(String player_id) {
         if (player_id == null || !playersLeft.containsKey(player_id)) {
-            player_id = ""+playersLeft.get(playersLeft.keySet().iterator().next()).data_id;
+
+            if(shortLists.containsKey(currentUser)) {
+                if (shortLists.get(currentUser).size() < 1)
+                    player_id = "" + playersLeft.get(playersLeft.keySet().iterator().next()).data_id;
+                else
+                    player_id = shortLists.get(currentUser).remove(0);
+            }else
+                player_id = "" + playersLeft.get(playersLeft.keySet().iterator().next()).data_id;
+
         }
 
         playersLeft.remove(player_id);
+
+        for (Map.Entry<String, ArrayList<String>> entry : shortLists.entrySet())
+        {
+           entry.getValue().remove(player_id);
+        }
+
         picks.add(new Pick(currentUser, player_id));
         for(ActorRef ref : userActors.values()) {
             ref.tell(new MakePick(currentUser, player_id), self());
@@ -202,6 +270,18 @@ public class DraftManagerActor extends UntypedActor {
         public MakePick(String user_id, String player_id) {
             this.user_id = user_id;
             this.player_id = player_id;
+        }
+    }
+
+    public static class FavouritePick extends MakePick {
+        public FavouritePick(String user_id, String player_id) {
+           super(user_id,player_id);
+        }
+    }
+
+    public static class RemoveFavourite extends MakePick {
+        public RemoveFavourite(String user_id, String player_id) {
+            super(user_id,player_id);
         }
     }
 
