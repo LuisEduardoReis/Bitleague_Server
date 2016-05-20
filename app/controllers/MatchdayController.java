@@ -11,6 +11,7 @@ import static play.mvc.Results.ok;
 public class MatchdayController {
 
     public static boolean locked = false;
+    public static int matchday = 0;
 
     public Result getLockState() {return ok(locked ? "true" : "false");}
 
@@ -24,7 +25,7 @@ public class MatchdayController {
         return ok();
     }
 
-    public Result postMatchday() {
+    public Result postMatchday(Integer matchday_num) {
         return ok();
     }
 }
