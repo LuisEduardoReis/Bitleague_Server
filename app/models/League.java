@@ -1,15 +1,9 @@
 package models;
 
-import com.fasterxml.jackson.annotation.JsonProperty;
 import controllers.draft.DraftManagerActor;
 import org.bson.types.ObjectId;
 import org.jongo.MongoCollection;
 import org.jongo.marshall.jackson.oid.MongoId;
-import play.Logger;
-import play.Play;
-import play.api.libs.*;
-import play.api.libs.iteratee.Enumeratee;
-import uk.co.panaxiom.playjongo.PlayJongo;
 
 import java.util.*;
 import java.util.Collections;
@@ -19,7 +13,7 @@ public class League extends Model {
     public static final int NUM_USERS = 8;
     public static final int SNAKE_ORDER[] = {0,1,2,3,4,5,6,7,7,6,5,4,3,2,1,0};
 
-    public static enum State {INVITE, DRAFTING, DURATION}
+    public enum State {INVITE, DRAFTING, DURATION}
 
     public static MongoCollection leagues() {
         return jongo.getCollection("leagues");
