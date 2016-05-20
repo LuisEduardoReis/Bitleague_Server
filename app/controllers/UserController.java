@@ -41,6 +41,15 @@ public class UserController extends Controller {
         return ok(Json.toJson(user));
     }
 
+    public Result getMe() {
+        if (!request().hasHeader("Authorization")) return unauthorized("Missing authorization header");
+
+        User user_t = User.findByToken(request().getHeader("Authorization"));
+        if (user_t == null) return unauthorized("Invalid authorization token: user not found!");
+        
+        return ok(Json.toJson(user_t));
+    }
+
     @Deprecated
     @BodyParser.Of(BodyParser.Json.class)
     public Result addUser() {
