@@ -61,6 +61,7 @@ public class DraftManagerActor extends UntypedActor {
             this.league_id = init.league_id;
             League league = League.findById(this.league_id);
             this.TURN_TIME = league.turn_timer;
+            this.timer = TURN_TIME;
             for (String user_id : league.users.keySet()) {
                 User user = User.findById(user_id);
                 users.add(user_id);
