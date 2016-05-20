@@ -37,4 +37,9 @@ public class MatchdayController {
         ScoringHelper.handleMatchday(matchDays.get(matchday_num-1));
         return ok();
     }
+
+    public Result testStuff(){
+        ScoringHelper.handleMatchday(Season.seasons().find().as(Season.class).next().leagues.get(0).matchdays.get(0));
+        return ok();
+    }
 }
