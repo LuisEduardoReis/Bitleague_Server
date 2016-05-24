@@ -78,6 +78,8 @@ public class LeagueController extends Controller {
     }
 
 
+
+
     @BodyParser.Of(BodyParser.Json.class)
     public Result addUser() {
         if (!request().hasHeader("Authorization")) return unauthorized("Missing authorization header");
@@ -111,7 +113,7 @@ public class LeagueController extends Controller {
         if (!request().hasHeader("Authorization")) return unauthorized("Missing authorization header");
 
         JsonNode json = request().body().asJson();
-        String args[] = {"name"};
+        String args[] = {"name", "time"};
         ParameterParser params = new ParameterParser(json, args);
         if (!params.success) return badRequest(params.reason);
 
@@ -122,10 +124,19 @@ public class LeagueController extends Controller {
         String creator =  user.id.toString();
         String name = params.get("name");
 
+        int turn_timer = json.findValue("time").asInt();
+
+        if(turn_timer < 10)
+            return badRequest("Your league's turns mustn't last less than 10 seconds!");
+
+        if(turn_timer > 60)
+            return badRequest("Your league's turns mustn't be longer than 60 seconds!");
+
         League league = new League();
         league.name = name;
         league.creator = creator;
         league.users.put(creator,true);
+        league.turn_timer = turn_timer;
         league.insert();
 
         user.leagues.put(league.id.toString(), true);

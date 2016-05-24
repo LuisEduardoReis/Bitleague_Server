@@ -16,7 +16,7 @@ import java.util.*;
 
 public class DraftManagerActor extends UntypedActor {
 
-    private static final float TURN_TIME = 10;
+    private float TURN_TIME = 10;
     private static final int PICKS_PER_PLAYER = 18;
     public static Props props = Props.create(DraftManagerActor.class);
 
@@ -60,6 +60,8 @@ public class DraftManagerActor extends UntypedActor {
             Init init = (Init) message;
             this.league_id = init.league_id;
             League league = League.findById(this.league_id);
+            this.TURN_TIME = league.turn_timer;
+            this.timer = TURN_TIME;
             for (String user_id : league.users.keySet()) {
                 User user = User.findById(user_id);
                 users.add(user_id);

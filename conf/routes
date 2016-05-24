@@ -10,6 +10,7 @@ GET         /chat                   controllers.ApplicationController.chat
 # Users
 GET         /api/users              controllers.UserController.getUsers(page: Int ?= 0, page_size : Int ?= 10)
 GET         /api/user               controllers.UserController.getUser(id: String ?= "")
+GET         /api/me                 controllers.UserController.getMe
 
 POST        /api/user               controllers.UserController.addUser
 DELETE      /api/user               controllers.UserController.deleteUser(id: String ?= "")
