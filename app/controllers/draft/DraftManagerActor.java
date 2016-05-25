@@ -17,7 +17,7 @@ import java.util.*;
 public class DraftManagerActor extends UntypedActor {
 
     private float TURN_TIME = 10;
-    private static final int PICKS_PER_PLAYER = 18;
+    private static final int PICKS_PER_PLAYER = 23;
     public static Props props = Props.create(DraftManagerActor.class);
 
     public boolean started;
