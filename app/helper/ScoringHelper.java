@@ -50,13 +50,11 @@ public class ScoringHelper {
             ArrayList<League.Match> league_matchday = league.matches.get(0);
 
             // Calculate Points
-            Logger.info(league.name);
             for(League.Match match : league_matchday) {
                 UserTeam hometeam = league.teams.get(match.homePlayer);
                 UserTeam awayteam = league.teams.get(match.awayPlayer);
                 float homepoints = calculatePoints(hometeam, playerPoints);
                 float awaypoints = calculatePoints(awayteam, playerPoints);
-                Logger.info(homepoints + " vs " + awaypoints + " " + awayteam);
             }
         }
     }
@@ -64,17 +62,21 @@ public class ScoringHelper {
     public static float calculatePoints(UserTeam team, HashMap<Integer, Float> playerPoints) {
         if (!team.hasTeam) return 0;
 
-        Logger.info("calculating");
-
         float sum = 0;
 
         for(Map.Entry<String,Integer> player : team.lineup.entrySet()) {
             int player_id = Integer.parseInt(player.getKey());
-            sum += (playerPoints.containsKey(player_id) ? playerPoints.get(player_id) : 0);
+            double points = (playerPoints.containsKey(player_id) ? playerPoints.get(player_id) : 0);
+            Player playa = Player.findByDataId(player.getKey());
+            if(playa.position == player.getValue())
+                sum += points;
+            else
+                sum += 0.5*points;
         }
         for(String player : team.bench.keySet()) {
             int player_id = Integer.parseInt(player);
             sum += 0.5*(playerPoints.containsKey(player_id) ? playerPoints.get(player_id) : 0);
+
         }
         return sum;
     }
