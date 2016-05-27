@@ -106,6 +106,10 @@ public class League extends Model {
         public String homePlayer;
         public String awayPlayer;
 
+        public int result;
+        public float homePoints;
+        public float awayPoints;
+
         public Match() {}
 
         public Match(String h, String a) {

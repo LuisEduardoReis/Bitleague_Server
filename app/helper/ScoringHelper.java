@@ -51,20 +51,10 @@ public class ScoringHelper {
 
             // Calculate Points
             for(League.Match match : league_matchday) {
-                UserTeam hometeam = league.teams.get(match.homePlayer);
-                UserTeam awayteam = league.teams.get(match.awayPlayer);
-                float homepoints = calculatePoints(hometeam, playerPoints);
-                float awaypoints = calculatePoints(awayteam, playerPoints);
-
-                if(hometeam.points > 0 )
-                    hometeam.points += homepoints;
-                else
-                    hometeam.points = homepoints;
-
-                if(awayteam.points > 0 )
-                    awayteam.points += awaypoints;
-                else
-                    awayteam.points = awaypoints;
+                match.homePoints = calculatePoints(league.teams.get(match.homePlayer), playerPoints);
+                match.awayPoints = calculatePoints(league.teams.get(match.awayPlayer), playerPoints);
+                match.result = (match.awayPoints != match.homePoints) ?
+                                (match.homePoints > match.awayPoints ? 1 : 2) : 3;
             }
             league.insert();
         }
@@ -78,16 +68,12 @@ public class ScoringHelper {
         for(Map.Entry<String,Integer> player : team.lineup.entrySet()) {
             int player_id = Integer.parseInt(player.getKey());
             double points = (playerPoints.containsKey(player_id) ? playerPoints.get(player_id) : 0);
-            Player playa = Player.findByDataId(player.getKey());
-            if(playa.position == player.getValue())
-                sum += points;
-            else
-                sum += 0.5*points;
+            Player player_obj = Player.findByDataId(player.getKey());
+            sum += (player_obj.position == player.getValue()) ? points : 0.5*points;
         }
         for(String player : team.bench.keySet()) {
             int player_id = Integer.parseInt(player);
             sum += 0.5*(playerPoints.containsKey(player_id) ? playerPoints.get(player_id) : 0);
-
         }
         return sum;
     }

@@ -13,7 +13,6 @@ public class UserTeam {
     public boolean hasTeam;
     public Map<String,Integer> lineup;
     public Map<String,Boolean> bench;
-    public float points;
 
     public UserTeam() {
         hasTeam = false;
