@@ -67,10 +67,22 @@ public class DraftManagerActor extends UntypedActor {
                 users.add(user_id);
                 usernames.put(user_id, user.name);
             }
+            Logger.info("init user size: " + users.size());
         } else if (message instanceof Start) {
             if (cancel != null) cancel.cancel();
             this.cancel = ((Start) message).cancel;
             this.turn = 0;
+
+            League league = League.findById(this.league_id);
+            for (String user_id : league.users.keySet()) {
+                User user = User.findById(user_id);
+                if(!users.contains(user)) {
+                    users.add(user_id);
+                    usernames.put(user_id, user.name);
+                }
+            }
+
+            Logger.info("start user size: " + users.size());
             this.currentUser = users.get(0);
         } else if (message instanceof AddUserActor) {
             AddUserActor add = (AddUserActor) message;
