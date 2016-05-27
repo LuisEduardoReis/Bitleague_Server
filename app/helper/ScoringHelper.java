@@ -55,7 +55,18 @@ public class ScoringHelper {
                 UserTeam awayteam = league.teams.get(match.awayPlayer);
                 float homepoints = calculatePoints(hometeam, playerPoints);
                 float awaypoints = calculatePoints(awayteam, playerPoints);
+
+                if(hometeam.points > 0 )
+                    hometeam.points += homepoints;
+                else
+                    hometeam.points = homepoints;
+
+                if(awayteam.points > 0 )
+                    awayteam.points += awaypoints;
+                else
+                    awayteam.points = awaypoints;
             }
+            league.insert();
         }
     }
 
