@@ -1,10 +1,10 @@
 package helper;
 
-import models.League;
-import models.RealTeam;
-import models.Season;
+import models.*;
 import play.Logger;
 
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.Map;
 
 /**
@@ -14,25 +14,68 @@ public class ScoringHelper {
 
 
     public static void handleMatchday(Season.MatchDay matchday) {
-        for(League league : League.leagues().find().as(League.class)) {
 
-            // Matchday counter ++
+        HashMap<Integer, Float> playerPoints = new HashMap<>();
 
-            // Calculate Points
-            for(int i = 0; i < league.matches.size(); i++){
-                for(int j = 0; j < league.matches.get(i).size(); j+=2){
-                    String homePlayer = league.matches.get(i).get(j).homePlayer;
-                    String awayPlayer = league.matches.get(i).get(j+1).awayPlayer;
-
-                    Map<String,Integer> homePlayerLineUp = league.teams.get(homePlayer).lineup;
-                    Map<String,Integer> awayPlayerLineUp = league.teams.get(awayPlayer).lineup;
-                    for(int k = 0; k < homePlayerLineUp.size(); k++){
+        for(Season.Match match : matchday.matches) {
+            MatchEvent matchEvent = MatchEvent.findById(match._id);
+            if (matchEvent != null) {
+                for(MatchEvent.Player player : matchEvent.players) {
+                    float value = 1;
+                    if (player.startEleven) value+=1;
+                    for(MatchEvent.Event event : player.events) {
+                        // Cartão Amarelo
+                        if (event.typeId == 2) value -= 1;
+                        // Cartão Vermelho
+                        if (event.typeId == 3) value -= 1.5;
+                        // GOLO
+                        if (event.typeId == 4) value += 5;
+                        // Duplo Amarelo
+                        if (event.typeId == 6) value -= 1;
                     }
-                    for(int l = 0; l < awayPlayerLineUp.size(); l++){
-                    }
+                    playerPoints.put(player._id, (playerPoints.containsKey(player._id) ? playerPoints.get(player._id) : 0) + value);
                 }
             }
         }
-        Logger.info("test");
+        //for(HashMap.Entry<Integer, Float> entry : playerPoints.entrySet()) {
+        ///    Logger.info(entry.getKey() + " " + entry.getValue());
+        //}
+
+        for(League league : League.leagues().find().as(League.class)) {
+            if (league.state != League.State.DURATION) continue;
+            // Matchday counter ++
+
+            // Get matchday
+
+            ArrayList<League.Match> league_matchday = league.matches.get(0);
+
+            // Calculate Points
+            Logger.info(league.name);
+            for(League.Match match : league_matchday) {
+                UserTeam hometeam = league.teams.get(match.homePlayer);
+                UserTeam awayteam = league.teams.get(match.awayPlayer);
+                float homepoints = calculatePoints(hometeam, playerPoints);
+                float awaypoints = calculatePoints(awayteam, playerPoints);
+                Logger.info(homepoints + " vs " + awaypoints + " " + awayteam);
+            }
+        }
+    }
+
+    public static float calculatePoints(UserTeam team, HashMap<Integer, Float> playerPoints) {
+        if (!team.hasTeam) return 0;
+
+        Logger.info("calculating");
+
+        float sum = 0;
+
+        for(Map.Entry<String,Integer> player : team.lineup.entrySet()) {
+            int player_id = Integer.parseInt(player.getKey());
+            sum += (playerPoints.containsKey(player_id) ? playerPoints.get(player_id) : 0);
+        }
+        for(String player : team.bench.keySet()) {
+            int player_id = Integer.parseInt(player);
+            sum += 0.5*(playerPoints.containsKey(player_id) ? playerPoints.get(player_id) : 0);
+        }
+        return sum;
     }
 }

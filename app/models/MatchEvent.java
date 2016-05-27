@@ -44,4 +44,6 @@ public class MatchEvent extends Model {
         public String partDescription;
         public int substitutionInPlayerId;
     }
+
+    public static MatchEvent findById(int id) { return matchEvents().findOne("{_id: #}", id).as(MatchEvent.class);}
 }
