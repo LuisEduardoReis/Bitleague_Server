@@ -28,7 +28,7 @@ public class League extends Model {
     public Map<String, Boolean> users;
     public Map<String, UserTeam> teams;
 
-    int matchday_counter;
+    public int matchday_counter;
     public ArrayList<ArrayList<Match>> matches;
 
     public State state;

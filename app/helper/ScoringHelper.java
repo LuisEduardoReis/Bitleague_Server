@@ -37,17 +37,16 @@ public class ScoringHelper {
                 }
             }
         }
-        //for(HashMap.Entry<Integer, Float> entry : playerPoints.entrySet()) {
-        ///    Logger.info(entry.getKey() + " " + entry.getValue());
-        //}
 
         for(League league : League.leagues().find().as(League.class)) {
             if (league.state != League.State.DURATION) continue;
+            if(league.matchday_counter >= league.matches.size()) continue;
+
             // Matchday counter ++
+            league.matchday_counter++;
 
             // Get matchday
-
-            ArrayList<League.Match> league_matchday = league.matches.get(0);
+            ArrayList<League.Match> league_matchday = league.matches.get(league.matchday_counter-1);
 
             // Calculate Points
             for(League.Match match : league_matchday) {
@@ -56,6 +55,8 @@ public class ScoringHelper {
                 match.result = (match.awayPoints != match.homePoints) ?
                                 (match.homePoints > match.awayPoints ? 1 : 2) : 3;
             }
+
+            // Save league
             league.insert();
         }
     }
