@@ -44,13 +44,16 @@ DELETE      /api/league             controllers.LeagueController.deleteLeague(id
 
 GET         /api/league/players     controllers.LeagueController.getPlayers(id: String ?= "")
 
+GET         /api/lockstate          controllers.MatchdayController.getLockState
+
 # Admin
-GET         /api/admin/lockstate    controllers.MatchdayController.getLockState
 POST        /api/admin/lock         controllers.MatchdayController.postLock
 POST        /api/admin/unlock       controllers.MatchdayController.postUnlock
+POST        /api/admin/matchday     controllers.MatchdayController.postMatchday(id: Integer)
 
 # Map static resources from the /public folder to the /assets URL path
 GET        /assets/*file         controllers.Assets.at(path="/public", file)
 #GET        /webjars/*file        controllers.WebJarAssets.at(file)
+
 
 
