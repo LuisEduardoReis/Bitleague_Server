@@ -6,6 +6,7 @@ import akka.actor.Props;
 import akka.actor.UntypedActor;
 import controllers.DataController;
 import models.League;
+import models.Player;
 import models.Season;
 import models.User;
 import play.Logger;
@@ -15,8 +16,8 @@ import java.util.*;
 
 public class DraftManagerActor extends UntypedActor {
 
-    private static final float TURN_TIME = 10;
-    private static final int PICKS_PER_PLAYER = 18;
+    private float TURN_TIME = 10;
+    private static final int PICKS_PER_PLAYER = 23;
     public static Props props = Props.create(DraftManagerActor.class);
 
     public boolean started;
@@ -32,7 +33,8 @@ public class DraftManagerActor extends UntypedActor {
     public int turn;
     public String currentUser;
     public List<Pick> picks;
-    public HashMap<String, Season.Player> playersLeft;
+    public HashMap<String, ArrayList<String>> shortLists;
+    public HashMap<String, Player> playersLeft;
 
     public DraftManagerActor() {
         this.started = false;
@@ -49,6 +51,7 @@ public class DraftManagerActor extends UntypedActor {
         this.currentUser = "";
         this.picks = new ArrayList<>();
         this.playersLeft = DataController.getPlayersHash();
+        this.shortLists = new HashMap<>();
     }
 
     @Override
@@ -57,15 +60,29 @@ public class DraftManagerActor extends UntypedActor {
             Init init = (Init) message;
             this.league_id = init.league_id;
             League league = League.findById(this.league_id);
+            this.TURN_TIME = league.turn_timer;
+            this.timer = TURN_TIME;
             for (String user_id : league.users.keySet()) {
                 User user = User.findById(user_id);
                 users.add(user_id);
                 usernames.put(user_id, user.name);
             }
+            Logger.info("init user size: " + users.size());
         } else if (message instanceof Start) {
             if (cancel != null) cancel.cancel();
             this.cancel = ((Start) message).cancel;
             this.turn = 0;
+
+            League league = League.findById(this.league_id);
+            for (String user_id : league.users.keySet()) {
+                User user = User.findById(user_id);
+                if(!users.contains(user)) {
+                    users.add(user_id);
+                    usernames.put(user_id, user.name);
+                }
+            }
+
+            Logger.info("start user size: " + users.size());
             this.currentUser = users.get(0);
         } else if (message instanceof AddUserActor) {
             AddUserActor add = (AddUserActor) message;
@@ -80,9 +97,14 @@ public class DraftManagerActor extends UntypedActor {
                     userActors.remove(e.getKey());
             }
             SendUserListUpdate();
+        }else if (message instanceof RemoveFavourite) {
+            RemoveFavourite pick = (RemoveFavourite) message;
+            RemoveFromShortList(pick);
+        } else if (message instanceof FavouritePick) {
+            FavouritePick pick = (FavouritePick) message;
+            AddToShortList(pick);
         } else if (message instanceof MakePick) {
             MakePick pick = (MakePick) message;
-            Logger.info(pick.user_id + " " + currentUser);
             if (pick.user_id.equals(currentUser)) DoPick(pick.player_id);
         } else if (message instanceof String) {
             String string = (String) message;
@@ -102,8 +124,10 @@ public class DraftManagerActor extends UntypedActor {
                         cancel = null;
                         SendUpdate("noone", -1);
 
+                        currentUser = null;
                         League league = League.findById(league_id);
-                        league.state = League.State.DURATION;
+                        league.generateTeams(picks);
+                        league.startDuration();
                         league.insert();
                     }
                 }
@@ -114,16 +138,77 @@ public class DraftManagerActor extends UntypedActor {
     }
 
 
+    private void RemoveFromShortList(RemoveFavourite pick) {
+        if (pick.player_id == null) {
+            return;
+        }
+        if(!shortLists.containsKey(pick.user_id))
+        {
+            shortLists.get(pick.user_id).remove(pick.player_id);
+        }
+
+
+        ActorRef user = userActors.get(pick.user_id);
+        user.tell(pick, self());
+
+
+
+    }
+
+    private void AddToShortList(FavouritePick pick) {
+        if (pick.player_id == null) {
+           return;
+        }
+        ArrayList<String> shortList = new ArrayList<>();
+        if(!shortLists.containsKey(pick.user_id))
+        {
+            shortList.add(pick.player_id);
+            shortLists.put(pick.user_id, shortList);
+        }
+        else
+        {
+            shortList = shortLists.get(pick.user_id);
+            if(shortList.contains(pick.player_id)) {
+                return;
+            }
+            else {
+                shortList.add(pick.player_id);
+                shortLists.put(pick.player_id, shortList);
+            }
+        }
+
+
+        ActorRef user = userActors.get(pick.user_id);
+        user.tell(pick, self());
+
+
+
+    }
     private void DoPick(String player_id) {
         if (player_id == null || !playersLeft.containsKey(player_id)) {
-            player_id = ""+playersLeft.get(playersLeft.keySet().iterator().next())._id;
+
+            if(shortLists.containsKey(currentUser)) {
+                if (shortLists.get(currentUser).size() < 1)
+                    player_id = "" + playersLeft.get(playersLeft.keySet().iterator().next()).data_id;
+                else
+                    player_id = shortLists.get(currentUser).remove(0);
+            }else
+                player_id = "" + playersLeft.get(playersLeft.keySet().iterator().next()).data_id;
+
         }
 
         playersLeft.remove(player_id);
+
+        for (Map.Entry<String, ArrayList<String>> entry : shortLists.entrySet())
+        {
+           entry.getValue().remove(player_id);
+        }
+
         picks.add(new Pick(currentUser, player_id));
         for(ActorRef ref : userActors.values()) {
             ref.tell(new MakePick(currentUser, player_id), self());
         }
+
         turn++;
         timer = TURN_TIME;
         //currentUser = users.get(League.SNAKE_ORDER[turn%(2*League.NUM_USERS)]);
@@ -199,6 +284,18 @@ public class DraftManagerActor extends UntypedActor {
         public MakePick(String user_id, String player_id) {
             this.user_id = user_id;
             this.player_id = player_id;
+        }
+    }
+
+    public static class FavouritePick extends MakePick {
+        public FavouritePick(String user_id, String player_id) {
+           super(user_id,player_id);
+        }
+    }
+
+    public static class RemoveFavourite extends MakePick {
+        public RemoveFavourite(String user_id, String player_id) {
+            super(user_id,player_id);
         }
     }
 

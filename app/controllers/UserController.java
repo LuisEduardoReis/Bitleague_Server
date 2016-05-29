@@ -38,7 +38,20 @@ public class UserController extends Controller {
         if (user_t == null) return unauthorized("Invalid authorization token: user not found!");
         if (!(user_t.isAdmin || user_t.id.equals(user.id))) return unauthorized("Invalid authorization token!");
 
+
         return ok(Json.toJson(user));
+    }
+
+    public Result getMe() {
+        if (!request().hasHeader("Authorization")) return unauthorized("Missing authorization header");
+
+        User user_t = User.findByToken(request().getHeader("Authorization"));
+        if (user_t == null) return unauthorized("Invalid authorization token: user not found!");
+
+        ObjectNode user_json = (ObjectNode) Json.toJson(user_t);
+        user_json.put("id_string",user_t.id.toString());
+
+        return ok(user_json);
     }
 
     @Deprecated

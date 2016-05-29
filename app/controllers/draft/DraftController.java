@@ -6,7 +6,6 @@ import com.google.inject.Inject;
 import helper.ParameterParser;
 import models.League;
 import models.User;
-import play.Logger;
 import play.mvc.*;
 import scala.concurrent.duration.Duration;
 
@@ -50,12 +49,14 @@ public class DraftController extends Controller {
         User user_t = User.findByToken(request().getHeader("Authorization"));
         if (user_t == null) return unauthorized("Invalid authorization token: user not found!");
 
+        if(!user_t.id.toString().equals(league.creator))
+            return unauthorized("You are not the creator!");
+
         if (!league.creator.equals(user_t.id.toString())) return unauthorized("You are not this league's creator!");
         if (league.state != League.State.INVITE && league.state != League.State.DRAFTING) return badRequest("League already drafted!");
 
         if (!league.readyForDraft()) return badRequest("This league's draft is not ready to start");
 
-        Logger.info("Draft "+league_id+" started");
         league.state = League.State.DRAFTING;
         league.insert();
 
