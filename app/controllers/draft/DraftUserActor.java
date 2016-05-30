@@ -39,6 +39,7 @@ public class DraftUserActor extends UntypedActor {
     }
 
     public void onReceive(Object message) throws Exception {
+        // Websocket messages
         if (message instanceof String) {
             try {
                 JsonNode json = Json.parse((String) message);
@@ -81,6 +82,7 @@ public class DraftUserActor extends UntypedActor {
                 out.tell("close", self());
                 self().tell(PoisonPill.getInstance(), self());
             }
+        // Actor messages
         } else if (message instanceof DraftManagerActor.UserListUpdate) {
             DraftManagerActor.UserListUpdate update = (DraftManagerActor.UserListUpdate) message;
             ObjectNode res = Json.newObject();

@@ -16,7 +16,6 @@ import java.util.*;
 
 public class DraftManagerActor extends UntypedActor {
 
-    private float TURN_TIME = 10;
     private static final int PICKS_PER_PLAYER = 23;
     public static Props props = Props.create(DraftManagerActor.class);
 
@@ -29,6 +28,7 @@ public class DraftManagerActor extends UntypedActor {
     public HashMap<String, ActorRef> userActors;
 
     public float timer;
+    public float turn_time;
     public long lastTick;
     public int turn;
     public String currentUser;
@@ -45,7 +45,8 @@ public class DraftManagerActor extends UntypedActor {
         this.usernames = new HashMap<>();
         this.userActors = new HashMap<>();
 
-        this.timer = TURN_TIME;
+        this.timer = 0;
+        this.turn_time = 60;
         this.lastTick = -1;
         this.turn = 0;
         this.currentUser = "";
@@ -56,33 +57,27 @@ public class DraftManagerActor extends UntypedActor {
 
     @Override
     public void onReceive(Object message) throws Exception {
+        // Initializer
         if (message instanceof Init) {
             Init init = (Init) message;
             this.league_id = init.league_id;
             League league = League.findById(this.league_id);
-            this.TURN_TIME = league.turn_timer;
-            this.timer = TURN_TIME;
+
             for (String user_id : league.users.keySet()) {
                 User user = User.findById(user_id);
                 users.add(user_id);
                 usernames.put(user_id, user.name);
             }
-            Logger.info("init user size: " + users.size());
+
+        // Start Draft
         } else if (message instanceof Start) {
             if (cancel != null) cancel.cancel();
             this.cancel = ((Start) message).cancel;
             this.turn = 0;
 
             League league = League.findById(this.league_id);
-            for (String user_id : league.users.keySet()) {
-                User user = User.findById(user_id);
-                if(!users.contains(user)) {
-                    users.add(user_id);
-                    usernames.put(user_id, user.name);
-                }
-            }
+            this.turn_time = league.turn_timer;
 
-            Logger.info("start user size: " + users.size());
             this.currentUser = users.get(0);
         } else if (message instanceof AddUserActor) {
             AddUserActor add = (AddUserActor) message;
@@ -152,7 +147,6 @@ public class DraftManagerActor extends UntypedActor {
         user.tell(pick, self());
 
 
-
     }
 
     private void AddToShortList(FavouritePick pick) {
@@ -210,7 +204,7 @@ public class DraftManagerActor extends UntypedActor {
         }
 
         turn++;
-        timer = TURN_TIME;
+        timer = turn_time;
         //currentUser = users.get(League.SNAKE_ORDER[turn%(2*League.NUM_USERS)]);
         int n = users.size();
         currentUser = users.get(turn % n);

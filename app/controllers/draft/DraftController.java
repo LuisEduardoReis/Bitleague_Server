@@ -33,6 +33,33 @@ public class DraftController extends Controller {
         return draftManagers.get(league_id);
     }
 
+    public Result closeInvite() {
+        if (!request().hasHeader("Authorization")) return unauthorized("Missing authorization header");
+
+        JsonNode json = request().body().asJson();
+        String args[] = {"id"};
+        ParameterParser params = new ParameterParser(json, args);
+        if (!params.success) return badRequest(params.reason);
+
+        String league_id = params.get("id");
+
+        League league = League.findById(league_id);
+        if (league == null) return notFound("League not found");
+
+        User user_t = User.findByToken(request().getHeader("Authorization"));
+        if (user_t == null) return unauthorized("Invalid authorization token: user not found!");
+
+        if(!user_t.id.toString().equals(league.creator)) return unauthorized("You are not the creator!");
+
+        if (!league.creator.equals(user_t.id.toString())) return unauthorized("You are not this league's creator!");
+        if (league.state != League.State.INVITE || !league.readyForDraft()) return badRequest("This league's draft is not ready to start");
+
+        league.state = League.State.READYTODRAFT;
+        league.insert();
+
+        return ok();
+    }
+
     public Result startDraft() {
         if (!request().hasHeader("Authorization")) return unauthorized("Missing authorization header");
 
@@ -49,13 +76,10 @@ public class DraftController extends Controller {
         User user_t = User.findByToken(request().getHeader("Authorization"));
         if (user_t == null) return unauthorized("Invalid authorization token: user not found!");
 
-        if(!user_t.id.toString().equals(league.creator))
-            return unauthorized("You are not the creator!");
+        if(!user_t.id.toString().equals(league.creator)) return unauthorized("You are not the creator!");
 
         if (!league.creator.equals(user_t.id.toString())) return unauthorized("You are not this league's creator!");
-        if (league.state != League.State.INVITE && league.state != League.State.DRAFTING) return badRequest("League already drafted!");
-
-        if (!league.readyForDraft()) return badRequest("This league's draft is not ready to start");
+        if (league.state != League.State.READYTODRAFT || !league.readyForDraft()) return badRequest("This league's draft is not ready to start");
 
         league.state = League.State.DRAFTING;
         league.insert();
