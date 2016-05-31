@@ -56,7 +56,8 @@ public class DraftUserActor extends UntypedActor {
 
                     League league = League.findById(parameterParser.get("league_id"));
                     if (league == null) throw new RuntimeException("League not found!");
-                    if (league.state != League.State.INVITE && league.state != League.State.DRAFTING) throw new RuntimeException("League has already drafted.");
+                    if (league.state == League.State.INVITE) throw new RuntimeException("League draft hasn't started yet");
+                    if (league.state == League.State.DURATION) throw new RuntimeException("League has already drafted.");
 
                     draftManager = DraftController.getDraftManager(parameterParser.get("league_id"));
                     draftManager.tell(new DraftManagerActor.AddUserActor(user_t.id.toString(), self()), self());
