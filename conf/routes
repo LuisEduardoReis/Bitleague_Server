@@ -28,7 +28,8 @@ GET         /api/matchdays          controllers.DataController.getMatchDays
 
 #Draft
 GET         /api/socket             controllers.draft.DraftController.socket
-POST         /api/draft/start       controllers.draft.DraftController.startDraft
+POST        /api/invite/close       controllers.draft.DraftController.closeInvite
+POST        /api/draft/start        controllers.draft.DraftController.startDraft
 
 
 # Leagues
