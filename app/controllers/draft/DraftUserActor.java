@@ -88,11 +88,7 @@ public class DraftUserActor extends UntypedActor {
             DraftManagerActor.UserListUpdate update = (DraftManagerActor.UserListUpdate) message;
             ObjectNode res = Json.newObject();
             res.put("event","user_list");
-            ObjectNode data = Json.newObject();
-                data.put("users", Json.toJson(update.users));
-                data.put("usernames", Json.toJson(update.usernames));
-                data.put("online", Json.toJson(update.online));
-            res.put("data",data);
+            res.put("data",Json.toJson(update));
             out.tell(res.toString(),self());
         } else if (message instanceof DraftManagerActor.PickList) {
             DraftManagerActor.PickList picks = (DraftManagerActor.PickList) message;

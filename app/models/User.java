@@ -28,6 +28,7 @@ public class User extends Model {
     public ObjectId id;
     public String name;
     public String facebook_id;
+    public String picture;
     public String token;
     public boolean isAdmin;
     public Date created_at;
@@ -56,23 +57,28 @@ public class User extends Model {
 
     public static User findOrCreateByFacebookId(String fb_id, String access_token) {
         if (User.users().find("{facebook_id:#}", fb_id).as(User.class).count() == 0) {
-            String name = "";
+            String name = "", picture="";
             try {
                 String debug_token_url = "https://graph.facebook.com/" + fb_id;
                 debug_token_url += "?access_token=" + access_token;
+                debug_token_url += "&fields=name,picture";
                 URL url = new URL(debug_token_url);
                 URLConnection conn = url.openConnection();
                 BufferedReader in = new BufferedReader(new InputStreamReader(conn.getInputStream()));
                 String res = in.readLine();
                 in.close();
 
-                JsonNode fb_json = Json.parse(res).findValue("name");
+                JsonNode fb_json = Json.parse(res);
 
-                if (fb_json != null) name = fb_json.textValue();
+                if (fb_json != null) {
+                    name = fb_json.findValue("name").textValue();
+                    picture = fb_json.findValue("picture").findValue("data").findValue("url").textValue();
+                }
             } catch (Exception e) {
             }
             User user = new User();
             user.name = name;
+            user.picture = picture;
             user.facebook_id = fb_id;
             user.insert();
         };
