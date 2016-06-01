@@ -117,7 +117,6 @@ public class DraftManagerActor extends UntypedActor {
                 long time = System.nanoTime();
                 if (lastTick > 0) {
                     float elapsed = (float) ((time - lastTick) / 1e9);
-                    Logger.info(timer+" "+elapsed);
                     timer = Math.max(timer - elapsed, 0);
                     if (timer == 0 || !userActors.containsKey(currentUser)) DoPick(null);
 
@@ -144,6 +143,38 @@ public class DraftManagerActor extends UntypedActor {
                 Logger.info(string);
         }
     }
+
+    private void DoPick(String player_id) {
+        if (player_id == null || !playersLeft.containsKey(player_id)) {
+
+            if(shortLists.containsKey(currentUser)) {
+                if (shortLists.get(currentUser).size() < 1)
+                    player_id = "" + playersLeft.get(playersLeft.keySet().iterator().next()).data_id;
+                else
+                    player_id = shortLists.get(currentUser).remove(0);
+            }else
+                player_id = "" + playersLeft.get(playersLeft.keySet().iterator().next()).data_id;
+
+        }
+
+        playersLeft.remove(player_id);
+
+        for (Map.Entry<String, ArrayList<String>> entry : shortLists.entrySet())
+        {
+            entry.getValue().remove(player_id);
+        }
+
+        picks.add(new Pick(currentUser, player_id));
+        for(ActorRef ref : userActors.values()) {
+            ref.tell(new MakePick(turn, currentUser, player_id), self());
+        }
+
+        turn++;
+        timer = turn_time;
+        //currentUser = users.get(League.SNAKE_ORDER[turn%(2*League.NUM_USERS)]);
+        currentUser = getCurrentUser(turn, users);
+    }
+
 
 
     private void RemoveFromShortList(RemoveFavourite pick) {
@@ -191,37 +222,6 @@ public class DraftManagerActor extends UntypedActor {
 
 
     }
-    private void DoPick(String player_id) {
-        Logger.info("pick");
-        if (player_id == null || !playersLeft.containsKey(player_id)) {
-
-            if(shortLists.containsKey(currentUser)) {
-                if (shortLists.get(currentUser).size() < 1)
-                    player_id = "" + playersLeft.get(playersLeft.keySet().iterator().next()).data_id;
-                else
-                    player_id = shortLists.get(currentUser).remove(0);
-            }else
-                player_id = "" + playersLeft.get(playersLeft.keySet().iterator().next()).data_id;
-
-        }
-
-        playersLeft.remove(player_id);
-
-        for (Map.Entry<String, ArrayList<String>> entry : shortLists.entrySet())
-        {
-           entry.getValue().remove(player_id);
-        }
-
-        picks.add(new Pick(currentUser, player_id));
-        for(ActorRef ref : userActors.values()) {
-            ref.tell(new MakePick(currentUser, player_id), self());
-        }
-
-        turn++;
-        timer = turn_time;
-        //currentUser = users.get(League.SNAKE_ORDER[turn%(2*League.NUM_USERS)]);
-        currentUser = getCurrentUser(turn, users);
-    }
 
     private void SendUserListUpdate() {
         UserListUpdate update = new UserListUpdate(users, usernames, userpictures, userActors);
@@ -235,7 +235,7 @@ public class DraftManagerActor extends UntypedActor {
         for(int i = -2; i<=2; i++) {
             TurnUpdate.QueueElement elem = new TurnUpdate.QueueElement();
                 elem.user_id = getCurrentUser(turn+i, users);
-                elem.pick_id = (i < 0 && picks.size()+i > 0) ? picks.get(picks.size()+i).player_id : "-1";
+                elem.pick_id = (i < 0 && picks.size()+i >= 0) ? picks.get(picks.size()+i).player_id : "-1";
             userQueue.add(elem);
         }
 
@@ -296,9 +296,11 @@ public class DraftManagerActor extends UntypedActor {
     }
 
     public static class MakePick {
+        public final int turn;
         public final String player_id;
         public final String user_id;
-        public MakePick(String user_id, String player_id) {
+        public MakePick(int turn, String user_id, String player_id) {
+            this.turn = turn;
             this.user_id = user_id;
             this.player_id = player_id;
         }
@@ -306,13 +308,13 @@ public class DraftManagerActor extends UntypedActor {
 
     public static class FavouritePick extends MakePick {
         public FavouritePick(String user_id, String player_id) {
-           super(user_id,player_id);
+           super(-1, user_id,player_id);
         }
     }
 
     public static class RemoveFavourite extends MakePick {
         public RemoveFavourite(String user_id, String player_id) {
-            super(user_id,player_id);
+            super(-1, user_id,player_id);
         }
     }
 
