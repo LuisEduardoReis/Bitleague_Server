@@ -71,7 +71,7 @@ public class DraftUserActor extends UntypedActor {
                 }else if (event.equals("pick")){
                     if (!json.has("data") || !json.get("data").has("player_id")) return;
 
-                    draftManager.tell(new DraftManagerActor.MakePick(user_id, json.get("data").get("player_id").asText()), self());
+                    draftManager.tell(new DraftManagerActor.MakePick(-1,user_id, json.get("data").get("player_id").asText()), self());
                 } else if (event.equals("favourite")){
                     if (!json.has("data") || !json.get("data").has("player_id")) return;
 
@@ -87,12 +87,8 @@ public class DraftUserActor extends UntypedActor {
         } else if (message instanceof DraftManagerActor.UserListUpdate) {
             DraftManagerActor.UserListUpdate update = (DraftManagerActor.UserListUpdate) message;
             ObjectNode res = Json.newObject();
-            res.put("event","user_list");
-            ObjectNode data = Json.newObject();
-                data.put("users", Json.toJson(update.users));
-                data.put("usernames", Json.toJson(update.usernames));
-                data.put("online", Json.toJson(update.online));
-            res.put("data",data);
+                res.put("event","user_list");
+                res.put("data",Json.toJson(update));
             out.tell(res.toString(),self());
         } else if (message instanceof DraftManagerActor.PickList) {
             DraftManagerActor.PickList picks = (DraftManagerActor.PickList) message;
@@ -103,14 +99,14 @@ public class DraftUserActor extends UntypedActor {
         }else if (message instanceof DraftManagerActor.RemoveFavourite) {
             DraftManagerActor.RemoveFavourite pick = (DraftManagerActor.RemoveFavourite) message;
             ObjectNode res = Json.newObject();
-            res.put("event","removeFavourite");
-            res.put("data",Json.toJson(pick));
+                res.put("event","removeFavourite");
+                res.put("data",Json.toJson(pick));
             out.tell(res.toString(), self());
         }  else if (message instanceof DraftManagerActor.FavouritePick) {
             DraftManagerActor.FavouritePick pick = (DraftManagerActor.FavouritePick) message;
             ObjectNode res = Json.newObject();
-            res.put("event","favourite");
-            res.put("data",Json.toJson(pick));
+                res.put("event","favourite");
+                res.put("data",Json.toJson(pick));
             out.tell(res.toString(), self());
         } else if (message instanceof  DraftManagerActor.MakePick) {
             DraftManagerActor.MakePick pick = (DraftManagerActor.MakePick) message;
