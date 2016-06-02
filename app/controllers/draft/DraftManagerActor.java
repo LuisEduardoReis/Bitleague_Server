@@ -127,8 +127,6 @@ public class DraftManagerActor extends UntypedActor {
                     if (turn >= users.size() * PICKS_PER_PLAYER) {
                         cancel.cancel();
                         cancel = null;
-                        SendUpdate(turn, "noone", -1);
-
                         currentUser = null;
                         League league = League.findById(league_id);
                         if (league != null) {
@@ -136,6 +134,7 @@ public class DraftManagerActor extends UntypedActor {
                             league.startDuration();
                             league.insert();
                         }
+                        SendUpdate(turn, "noone", -1);
                     }
                 }
                 lastTick = time;
@@ -145,6 +144,7 @@ public class DraftManagerActor extends UntypedActor {
     }
 
     private void DoPick(String player_id) {
+        if (currentUser == null) return;
         if (player_id == null || !playersLeft.containsKey(player_id)) {
 
             if(shortLists.containsKey(currentUser)) {
@@ -252,6 +252,7 @@ public class DraftManagerActor extends UntypedActor {
             this.user_id = user_id;
             this.player_id = player_id;
         }
+        public String toString() {return "{user_id: " + user_id + ", player_id: " + player_id + "}";}
     }
 
     // Messages
