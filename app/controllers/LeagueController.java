@@ -40,6 +40,8 @@ public class LeagueController extends Controller {
             ObjectNode node = Json.newObject();
                 node.put("id", league.id.toString());
                 node.put("name", league.name);
+                node.put("state", league.state.toString());
+                node.put("numTeams", league.users.size());
             leagues.add(node);
         }
 
