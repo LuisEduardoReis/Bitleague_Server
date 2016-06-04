@@ -74,6 +74,7 @@ public class LeagueController extends Controller {
                     User user = User.findById(user_id);
                     user_node.put("id",user_id);
                     user_node.put("name",user.name);
+                    user_node.put("picture",user.picture);
                 users.add(user_node);
             }
             league_json.put("users",users);
