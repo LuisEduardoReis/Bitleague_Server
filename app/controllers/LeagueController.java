@@ -42,6 +42,7 @@ public class LeagueController extends Controller {
                 node.put("name", league.name);
                 node.put("state", league.state.toString());
                 node.put("numTeams", league.users.size());
+                node.put("creator", league.creator);
             leagues.add(node);
         }
 
