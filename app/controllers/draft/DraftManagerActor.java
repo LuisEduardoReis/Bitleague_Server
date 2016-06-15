@@ -40,7 +40,7 @@ public class DraftManagerActor extends UntypedActor {
     public static String getCurrentUser(int turn, ArrayList<String> users) {
         if (turn<0 || users.size()==0 || turn>=users.size()*PICKS_PER_PLAYER) return null;
 
-        int i = turn % 2*users.size();
+        int i = turn % (2*users.size());
         if (i >= users.size()) i = 2*users.size()-1 - i;
         return users.get(i);
     }
