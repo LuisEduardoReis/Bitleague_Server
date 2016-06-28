@@ -40,6 +40,9 @@ public class LeagueController extends Controller {
             ObjectNode node = Json.newObject();
                 node.put("id", league.id.toString());
                 node.put("name", league.name);
+                node.put("state", league.state.toString());
+                node.put("numTeams", league.users.size());
+                node.put("creator", league.creator);
             leagues.add(node);
         }
 
@@ -65,12 +68,14 @@ public class LeagueController extends Controller {
             league_json.put("creator", league.creator);
             league_json.put("state", league.state.toString());
             league_json.put("matches", Json.toJson(league.matches));
+            league_json.put("turn_time", league.turn_timer);
             ArrayNode users = Json.newArray();
             for(String user_id : league.users.keySet()) {
                 ObjectNode user_node = Json.newObject();
                     User user = User.findById(user_id);
                     user_node.put("id",user_id);
                     user_node.put("name",user.name);
+                    user_node.put("picture",user.picture);
                 users.add(user_node);
             }
             league_json.put("users",users);
